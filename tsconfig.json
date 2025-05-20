@@ -5,9 +5,15 @@
     "declarationMap": true,
     "target": "es2016", /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
     "module": "commonjs", /* Specify what module code is generated. */
+    "baseUrl": ".",
     "rootDir": "./", /* Specify the root folder within your source files. */
     "outDir": "./dist", /* Specify an output folder for all emitted files. */
     "strict": true, /* Enable all strict type-checking options. */
+    "paths": {
+      "@common/*": [
+        "common/src/*"
+      ]
+    }
   },
   "include": [],
   "references": [
@@ -16,6 +22,9 @@
     },
     {
       "path": "./storage"
+    },
+    {
+      "path": "./common"
     }
   ]
 }
