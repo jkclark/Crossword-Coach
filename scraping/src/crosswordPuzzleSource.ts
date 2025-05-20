@@ -1,7 +1,7 @@
-import { CrosswordPuzzle } from "@common/interfaces/CrosswordPuzzle";
+import { CrosswordPuzzle } from "common/src/interfaces/CrosswordPuzzle";
 
 export default interface CrosswordPuzzleSource {
   getAllPuzzleURLs(): Promise<string[]>;
 
-  getPuzzle(): Promise<CrosswordPuzzle>;
+  getPuzzle(url: string): Promise<CrosswordPuzzle>;
 }

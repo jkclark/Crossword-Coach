@@ -1,10 +1,10 @@
 {
-  "name": "scraping",
+  "name": "@crosswordcoach/scraping",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./dist/index2.js",
+  "types": "./dist/index2.d.ts",
   "scripts": {
-    "build": "tsc --build",
-    "start": "node dist/index.js",
+    "scrape": "npx ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

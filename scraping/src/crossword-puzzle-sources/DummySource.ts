@@ -1,4 +1,4 @@
-import { CrosswordPuzzle } from "@common/interfaces/CrosswordPuzzle";
+import { CrosswordPuzzle } from "common/src/interfaces/CrosswordPuzzle";
 import CrosswordPuzzleSource from "../crosswordPuzzleSource";
 
 export default class DummySource implements CrosswordPuzzleSource {
@@ -6,12 +6,12 @@ export default class DummySource implements CrosswordPuzzleSource {
     return ["https://example.com/puzzle1", "https://example.com/puzzle2"];
   }
 
-  async getPuzzle(): Promise<CrosswordPuzzle> {
+  async getPuzzle(url: string): Promise<CrosswordPuzzle> {
     return {
       id: "12345",
       date: new Date("2025-01-01"),
       source: "foo",
-      words: { "Egyptian snake": "ASP" },
+      entries: [{ clue: "Egyptian serpent", answer: "ASP" }],
     };
   }
 }
