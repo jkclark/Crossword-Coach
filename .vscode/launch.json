@@ -17,6 +17,20 @@
                 "<node_internals>/**"
             ],
             "console": "integratedTerminal"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug current TS file",
+            "runtimeExecutable": "npx",
+            "runtimeArgs": [
+                "ts-node"
+            ],
+            "program": "${file}",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "console": "integratedTerminal"
         }
     ]
 }
