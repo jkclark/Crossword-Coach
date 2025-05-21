@@ -9,3 +9,12 @@ export interface Entry {
   clue: string;
   answer: string;
 }
+
+export function getEmptyPuzzle(): CrosswordPuzzle {
+  return {
+    id: "",
+    date: new Date(),
+    source: "",
+    entries: [],
+  };
+}
