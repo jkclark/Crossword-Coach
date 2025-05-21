@@ -5,10 +5,14 @@ export default class NYTSource implements CrosswordPuzzleSource {
   BASE_PUZZLE_URL = "https://www.nytimes.com/svc/crosswords/v6/puzzle/daily/";
   SOURCE_NAME = "NYT";
 
-  private cookie: string;
+  private startDate: Date;
+  private endDate: Date;
+  private cookie: string; // Required for NYT request
 
-  constructor(cookie: string) {
-    /* Cookie is required for authentication */
+  constructor(startDate: Date, endDate: Date, cookie: string) {
+    this.startDate = startDate;
+    this.endDate = endDate;
+
     if (!cookie) {
       throw new Error("NYTSource cannot be initialized without a cookie");
     }
@@ -18,9 +22,8 @@ export default class NYTSource implements CrosswordPuzzleSource {
   async getAllPuzzleURLs(): Promise<string[]> {
     const puzzleURLs: string[] = [];
 
-    const currentDate = new Date("2023-01-01T00:00:00Z");
-    const endDate = new Date("2023-01-01T00:00:00Z");
-    while (currentDate <= endDate) {
+    const currentDate = this.startDate;
+    while (currentDate <= this.endDate) {
       // Get the puzzle URL
       const puzzleURL = this.getPuzzleURLFromDate(currentDate);
 
