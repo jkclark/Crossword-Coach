@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 
-import DummyDataStore from "storage/src/data-stores/DummyDataStore";
+import FileDataStore from "storage/src/data-stores/FileDataStore";
 import { DataStore } from "storage/src/dataStore";
 import NYTSource from "./crossword-puzzle-sources/NYTSource";
 import CrosswordPuzzleSource from "./crosswordPuzzleSource";
@@ -37,7 +37,7 @@ if (require.main === module) {
   const dummySource = new NYTSource(startDate, endDate, nytCookie);
 
   /* Data store */
-  const dummyDataStore = new DummyDataStore();
+  const dummyDataStore = new FileDataStore("./temp/puzzles");
 
   main(dummySource, dummyDataStore);
 }
