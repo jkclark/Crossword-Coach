@@ -1,17 +1,9 @@
-import type { CrosswordPuzzle } from "common/src/interfaces/CrosswordPuzzle";
+import Navbar from "./components/Navbar";
 
 function App() {
-  const puzzle: CrosswordPuzzle = {
-    id: "1",
-    date: new Date(),
-    source: "NYT",
-    entries: [],
-  };
-  console.log(puzzle);
-
   return (
     <>
-      <button className="btn">Hello</button>
+      <Navbar />
     </>
   );
 }
