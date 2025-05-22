@@ -49,6 +49,9 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
      * Handle keyboard input.
      */
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore input if Ctrl or Meta (Command) key is pressed
+      if (event.ctrlKey || event.metaKey) return;
+
       const key = event.key.toUpperCase();
       if (key.length === 1 && key >= "A" && key <= "Z") {
         insertLetter(key);
