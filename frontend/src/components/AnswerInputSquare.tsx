@@ -14,7 +14,7 @@ const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({ value, selected, 
         aspect-square
         min-w-[3rem] min-h-[3rem]
         select-none
-        ${selected ? "bg-primary" : ""}
+        ${selected && !userGaveUp ? "bg-primary" : ""}
       `}
     >
       {userGaveUp ? answer : value}

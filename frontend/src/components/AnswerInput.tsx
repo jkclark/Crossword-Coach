@@ -97,7 +97,6 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
    */
   const giveUp = useCallback(() => {
     setUserGaveUp(true);
-    setCurrentSquareIndex(-1);
   }, [setUserGaveUp]);
 
   /**
@@ -105,7 +104,6 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
    */
   const goToNextEntry = () => {
     setUserGaveUp(false);
-    setCurrentSquareIndex(0);
     clearInput();
     setCurrentEntryIndex((prev) => prev + 1);
   };
