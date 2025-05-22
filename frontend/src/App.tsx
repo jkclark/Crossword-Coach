@@ -21,7 +21,9 @@ function App() {
       <div className="container mx-auto text-center">
         {allEntries && currentEntryIndex >= 0 && currentEntryIndex < allEntries.length && (
           <div>
-            <div className="text-4xl">{puzzleData.entries[currentEntryIndex].clue}</div>
+            <div className="w-full text-[clamp(1rem,5vw,2.5rem)] break-words mb-3">
+              {puzzleData.entries[currentEntryIndex].clue}
+            </div>
             <AnswerInput key={currentEntryIndex} answer={puzzleData.entries[currentEntryIndex].answer} />
           </div>
         )}

@@ -163,7 +163,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
   return (
     <div>
-      <div className="flex justify-center">
+      <div className="flex justify-center mb-5">
         {answer.split("").map((char, idx) => (
           <AnswerInputSquare
             key={idx}
@@ -173,14 +173,28 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
           />
         ))}
       </div>
+
       {!userGaveUp && (
-        <button className="btn" onClick={submitAnswer} disabled={!userInputIsFull}>
+        <button className="btn mr-2 py-[1em] text-[clamp(0.5rem,2vw,1.5rem)]" onClick={giveUp}>
+          I don't know
+        </button>
+      )}
+
+      {!userGaveUp && (
+        <button
+          className="btn ml-2 text-[clamp(0.5rem,2vw,1.5rem)]"
+          onClick={submitAnswer}
+          disabled={!userInputIsFull}
+        >
           Submit
         </button>
       )}
-      <button className="btn" onClick={giveUpOrGoNext}>
-        {!userGaveUp ? "I don't know" : "Next"}
-      </button>
+
+      {userGaveUp && (
+        <button className="btn text-[clamp(0.5rem,2vw,1.5rem)]" onClick={goToNextEntry}>
+          Next
+        </button>
+      )}
     </div>
   );
 };

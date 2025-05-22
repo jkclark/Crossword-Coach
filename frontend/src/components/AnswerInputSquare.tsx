@@ -12,7 +12,8 @@ const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({ value, selected, 
         text-4xl font-bold
         border border-black
         aspect-square
-        min-w-[3rem] min-h-[3rem]
+        w-[clamp(2.5rem,8vw,4rem)] h-[clamp(2.5rem,8vw,4rem)]
+        text-[clamp(1.5rem,5vw,3rem)]
         select-none
         ${selected && !userGaveUp ? "bg-primary" : ""}
       `}
