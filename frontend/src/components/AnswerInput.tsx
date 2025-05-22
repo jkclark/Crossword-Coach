@@ -182,7 +182,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
       {!userGaveUp && (
         <button
-          className="btn ml-2 text-[clamp(0.5rem,2vw,1.5rem)]"
+          className="btn ml-2 py-[1em] text-[clamp(0.5rem,2vw,1.5rem)]"
           onClick={submitAnswer}
           disabled={!userInputIsFull}
         >
@@ -191,7 +191,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       )}
 
       {userGaveUp && (
-        <button className="btn text-[clamp(0.5rem,2vw,1.5rem)]" onClick={goToNextEntry}>
+        <button className="btn py-[1em] text-[clamp(0.5rem,2vw,1.5rem)]" onClick={goToNextEntry}>
           Next
         </button>
       )}
