@@ -22,7 +22,7 @@ function App() {
         {allEntries && currentEntryIndex >= 0 && currentEntryIndex < allEntries.length && (
           <div>
             <div className="text-4xl">{puzzleData.entries[currentEntryIndex].clue}</div>
-            <AnswerInput answer={puzzleData.entries[currentEntryIndex].answer} />
+            <AnswerInput key={currentEntryIndex} answer={puzzleData.entries[currentEntryIndex].answer} />
           </div>
         )}
         {(allEntries.length === 0 || currentEntryIndex >= allEntries.length) && (

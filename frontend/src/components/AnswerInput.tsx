@@ -72,25 +72,16 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   };
 
   /**
-   * Clear the input and reset the current square index to 0.
-   */
-  const clearInput = useCallback(() => {
-    setUserInput(Array(answerRef.current.length).fill(""));
-    setCurrentSquareIndex(0);
-  }, [setUserInput, setCurrentSquareIndex]);
-
-  /**
    * Check if the user input matches the answer.
    */
   const submitAnswer = useCallback(() => {
     if (userInputRef.current.join("").toLowerCase() === answerRef.current.toLowerCase()) {
-      clearInput();
       setCurrentEntryIndex((prev) => prev + 1);
       console.log("correct!");
     } else {
       console.log("wrong...");
     }
-  }, [clearInput, setCurrentEntryIndex]);
+  }, [setCurrentEntryIndex]);
 
   /**
    * Handle the case when the user gives up.
@@ -102,11 +93,10 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   /**
    * Get ready for the next entry.
    */
-  const goToNextEntry = () => {
+  const goToNextEntry = useCallback(() => {
     setUserGaveUp(false);
-    clearInput();
     setCurrentEntryIndex((prev) => prev + 1);
-  };
+  }, [setUserGaveUp, setCurrentEntryIndex]);
 
   const userInputIsFull = userInput.every((char) => char !== "");
 
@@ -120,6 +110,19 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       if (event.ctrlKey || event.metaKey) return;
 
       const key = event.key.toUpperCase();
+
+      /* Handle the Enter key */
+      if (event.key === "Enter") {
+        if (userInputIsFull && !userGaveUp) {
+          submitAnswer();
+        } else if (userGaveUp) {
+          goToNextEntry();
+        }
+      }
+
+      /* If the user has given up, ignore all other keys */
+      if (userGaveUp) return;
+
       if (key.length === 1 && key >= "A" && key <= "Z") {
         insertLetter(key);
       } else if (event.key === "Backspace") {
@@ -128,8 +131,6 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
         moveLeft();
       } else if (event.key === "ArrowRight") {
         moveRight();
-      } else if (event.key === "Enter" && userInputIsFull && !userGaveUp) {
-        submitAnswer();
       } else if (event.code === "Space" || event.key === "Escape") {
         giveUp();
       }
@@ -137,7 +138,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [submitAnswer, giveUp, userInputIsFull, userGaveUp]);
+  }, [submitAnswer, giveUp, userInputIsFull, userGaveUp, goToNextEntry]);
 
   return (
     <div>
