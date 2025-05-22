@@ -110,6 +110,8 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     setCurrentEntryIndex((prev) => prev + 1);
   };
 
+  const userInputIsFull = userInput.every((char) => char !== "");
+
   /* Handle keyboard input */
   useEffect(() => {
     /**
@@ -128,7 +130,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
         moveLeft();
       } else if (event.key === "ArrowRight") {
         moveRight();
-      } else if (event.key === "Enter") {
+      } else if (event.key === "Enter" && userInputIsFull) {
         submitAnswer();
       } else if (event.code === "Space" || event.key === "Escape") {
         giveUp();
@@ -137,7 +139,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [submitAnswer, giveUp]);
+  }, [submitAnswer, giveUp, userInputIsFull]);
 
   return (
     <div>
@@ -151,8 +153,8 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
           />
         ))}
       </div>
-      <button className="btn" onClick={submitAnswer}>
-        Enter
+      <button className="btn" onClick={submitAnswer} disabled={!userInputIsFull}>
+        Submit
       </button>
       <button className="btn" onClick={giveUp}>
         I don't know
