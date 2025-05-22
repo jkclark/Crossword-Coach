@@ -1,7 +1,7 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useSetAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { currentEntryIndexAtom, userGaveUpAtom } from "../state";
 import AnswerInputSquare from "./AnswerInputSquare";
 
@@ -9,7 +9,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   const setCurrentEntryIndex = useSetAtom(currentEntryIndexAtom);
   const [currentSquareIndex, setCurrentSquareIndex] = useState(0);
   const [userInput, setUserInput] = useState<string[]>(Array(answer.length).fill(""));
-  const setUserGaveUp = useSetAtom(userGaveUpAtom);
+  const [userGaveUp, setUserGaveUp] = useAtom(userGaveUpAtom);
 
   /* Refs to always have latest values in the event handler */
   const currentSquareIndexRef = useRef(currentSquareIndex);
@@ -130,7 +130,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
         moveLeft();
       } else if (event.key === "ArrowRight") {
         moveRight();
-      } else if (event.key === "Enter" && userInputIsFull) {
+      } else if (event.key === "Enter" && userInputIsFull && !userGaveUp) {
         submitAnswer();
       } else if (event.code === "Space" || event.key === "Escape") {
         giveUp();
@@ -139,7 +139,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [submitAnswer, giveUp, userInputIsFull]);
+  }, [submitAnswer, giveUp, userInputIsFull, userGaveUp]);
 
   return (
     <div>
@@ -153,10 +153,10 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
           />
         ))}
       </div>
-      <button className="btn" onClick={submitAnswer} disabled={!userInputIsFull}>
+      <button className="btn" onClick={submitAnswer} disabled={!userInputIsFull || userGaveUp}>
         Submit
       </button>
-      <button className="btn" onClick={giveUp}>
+      <button className="btn" onClick={giveUp} disabled={userGaveUp}>
         I don't know
       </button>
       <button className="btn" onClick={goToNextEntry}>
