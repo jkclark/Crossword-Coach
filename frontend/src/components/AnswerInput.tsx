@@ -1,9 +1,12 @@
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 
+import { useSetAtom } from "jotai";
+import { currentEntryIndexAtom } from "../state";
 import AnswerInputSquare from "./AnswerInputSquare";
 
 const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
+  const setCurrentEntryIndex = useSetAtom(currentEntryIndexAtom);
   const [currentSquareIndex, setCurrentSquareIndex] = useState(0);
   const [userInput, setUserInput] = useState<string[]>(Array(answer.length).fill(""));
 
@@ -21,31 +24,55 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
   /* Handle keyboard input */
   useEffect(() => {
+    /**
+     * Check if the user input matches the answer.
+     */
+    const submitAnswer = () => {
+      if (userInputRef.current.join("").toLowerCase() === answerRef.current.toLowerCase()) {
+        clearInput();
+        setCurrentEntryIndex((prev) => prev + 1);
+        console.log("correct!");
+      } else {
+        console.log("wrong...");
+      }
+    };
+
+    /**
+     * Clear the input and reset the current square index to 0.
+     */
+    const clearInput = () => {
+      setUserInput(Array(answerRef.current.length).fill(""));
+      setCurrentSquareIndex(0);
+    };
+
+    /**
+     * Handle keyboard input.
+     */
     const handleKeyDown = (event: KeyboardEvent) => {
       const key = event.key.toUpperCase();
       if (key.length === 1 && key >= "A" && key <= "Z") {
-        handleAToZInput(key);
+        insertLetter(key);
       } else if (event.key === "Backspace") {
-        handleBackspace();
+        deleteLetter();
       } else if (event.key === "ArrowLeft") {
-        handleLeftArrow();
+        moveLeft();
       } else if (event.key === "ArrowRight") {
-        handleRightArrow();
+        moveRight();
       } else if (event.key === "Enter") {
-        handleEnter();
+        submitAnswer();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [setCurrentEntryIndex]);
 
   /**
    * Update the current square with the key pressed by the user.
    *
    * @param key The key pressed by the user.
    */
-  const handleAToZInput = (key: string) => {
+  const insertLetter = (key: string) => {
     setUserInput((prev) => {
       const newInput = [...prev];
       newInput[currentSquareIndexRef.current] = key;
@@ -58,7 +85,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   /**
    * Clear the current square, or move left and clear that square if the current square is already empty.
    */
-  const handleBackspace = () => {
+  const deleteLetter = () => {
     setUserInput((prev) => {
       const newInput = [...prev];
       const idx = currentSquareIndexRef.current;
@@ -77,26 +104,15 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   /**
    * Navigate to the square to the left of the current square.
    */
-  const handleLeftArrow = () => {
+  const moveLeft = () => {
     setCurrentSquareIndex((prev) => Math.max(prev - 1, 0));
   };
 
   /**
    * Navigate to the square to the right of the current square.
    */
-  const handleRightArrow = () => {
+  const moveRight = () => {
     setCurrentSquareIndex((prev) => Math.min(prev + 1, answerRef.current.length - 1));
-  };
-
-  /**
-   * Check if the user input matches the answer.
-   */
-  const handleEnter = () => {
-    if (userInputRef.current.join("").toLowerCase() === answerRef.current.toLowerCase()) {
-      console.log("correct!");
-    } else {
-      console.log("wrong...");
-    }
   };
 
   return (
