@@ -1,7 +1,7 @@
 import { useAtom, useAtomValue } from "jotai";
 
 import { useEffect } from "react";
-import puzzleData from "../../temp/puzzles/NYT-2023-01-03.json";
+import puzzleData from "../../temp/puzzles/NYT-2023-01-04.json";
 import AnswerInput from "./components/AnswerInput";
 import Navbar from "./components/Navbar";
 import { allEntriesAtom, currentEntryIndexAtom } from "./state";

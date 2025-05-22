@@ -10,6 +10,8 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   const [currentSquareIndex, setCurrentSquareIndex] = useState(0);
   const [userInput, setUserInput] = useState<string[]>(Array(answer.length).fill(""));
   const [userGaveUp, setUserGaveUp] = useAtom(userGaveUpAtom);
+  const [jumpingIndexes, setJumpingIndexes] = useState<number[]>([]);
+  const [isShaking, setIsShaking] = useState(false);
 
   /* Refs to always have latest values in the event handler */
   const currentSquareIndexRef = useRef(currentSquareIndex);
@@ -72,16 +74,39 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   };
 
   /**
+   * Get ready for the next entry.
+   */
+  const goToNextEntry = useCallback(() => {
+    // NOTE: We don't have to reset the user input or the current square index
+    // here, because the user input and the current square index are reset in
+    // the parent component when the entry (and thus this component's key) changes,
+    // unmounting and remounting this component.
+    setUserGaveUp(false);
+    setCurrentEntryIndex((prev) => prev + 1);
+  }, [setUserGaveUp, setCurrentEntryIndex]);
+
+  /**
    * Check if the user input matches the answer.
    */
   const submitAnswer = useCallback(() => {
+    /* If the answer is correct, animate the answer and go to the next entry */
     if (userInputRef.current.join("").toLowerCase() === answerRef.current.toLowerCase()) {
-      setCurrentEntryIndex((prev) => prev + 1);
-      console.log("correct!");
+      const delayBetweenJumps = 70; // milliseconds
+
+      /* Animate the answer */
+      animateCorrectAnswer(delayBetweenJumps);
+
+      /* After animation, go to next entry */
+      setTimeout(() => {
+        goToNextEntry();
+      }, answerRef.current.length * delayBetweenJumps + 400); // Wait for all jumps to finish
     } else {
-      console.log("wrong...");
+      /* If the answer is incorrect, shake the answer */
+      setIsShaking(true);
+      // 400ms duration is defined in animate-shake in index.css
+      setTimeout(() => setIsShaking(false), 400);
     }
-  }, [setCurrentEntryIndex]);
+  }, [goToNextEntry]);
 
   /**
    * Handle the case when the user gives up.
@@ -89,14 +114,6 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   const giveUp = useCallback(() => {
     setUserGaveUp(true);
   }, [setUserGaveUp]);
-
-  /**
-   * Get ready for the next entry.
-   */
-  const goToNextEntry = useCallback(() => {
-    setUserGaveUp(false);
-    setCurrentEntryIndex((prev) => prev + 1);
-  }, [setUserGaveUp, setCurrentEntryIndex]);
 
   const giveUpOrGoNext = useCallback(() => {
     if (!userGaveUp) {
@@ -161,15 +178,24 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [submitAnswer, userInputIsFull, userGaveUp, giveUpOrGoNext, submitAnswerOrGoNext]);
 
+  const animateCorrectAnswer = (delayBetweenJumps: number) => {
+    for (let i = 0; i < answerRef.current.length; i++) {
+      setTimeout(() => {
+        setJumpingIndexes((prev) => [...prev, i]);
+      }, i * delayBetweenJumps); // 120ms delay between jumps
+    }
+  };
+
   return (
     <div>
-      <div className="flex justify-center mb-5">
+      <div className={`flex justify-center mb-5 ${isShaking ? "animate-shake" : ""}`}>
         {answer.split("").map((char, idx) => (
           <AnswerInputSquare
             key={idx}
             value={userInput[idx]}
             selected={currentSquareIndex === idx}
             answer={char}
+            jumping={jumpingIndexes.includes(idx)}
           />
         ))}
       </div>

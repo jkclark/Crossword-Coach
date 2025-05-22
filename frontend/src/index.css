@@ -1,2 +1,55 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+/* For animating a correct answer */
+@keyframes jump {
+  0% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-30%);
+  }
+  60% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+.animate-jump {
+  animation: jump 0.5s cubic-bezier(0.36, 1.7, 0.57, 0.99);
+}
+
+/* For animating a wrong answer */
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-8px);
+  }
+  30% {
+    transform: translateX(8px);
+  }
+  45% {
+    transform: translateX(-8px);
+  }
+  60% {
+    transform: translateX(8px);
+  }
+  75% {
+    transform: translateX(-8px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/**
+ * If you want to change the duration of the shake animation,
+ * make sure also to change it in the setTimeout that removes
+ * the class in the AnswerInput component.
+ */
+.animate-shake {
+  animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
