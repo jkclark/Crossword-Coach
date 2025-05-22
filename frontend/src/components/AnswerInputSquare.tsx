@@ -1,6 +1,10 @@
+import { useAtomValue } from "jotai";
 import type React from "react";
+import { userGaveUpAtom } from "../state";
 
-const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({ value, selected }) => {
+const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({ value, selected, answer }) => {
+  const userGaveUp = useAtomValue(userGaveUpAtom);
+
   return (
     <div
       className={`
@@ -13,7 +17,7 @@ const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({ value, selected }
         ${selected ? "bg-primary" : ""}
       `}
     >
-      {value}
+      {userGaveUp ? answer : value}
     </div>
   );
 };
@@ -21,6 +25,7 @@ const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({ value, selected }
 interface AnswerInputSquareProps {
   value: string;
   selected: boolean;
+  answer: string;
 }
 
 export default AnswerInputSquare;

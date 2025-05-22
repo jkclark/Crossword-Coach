@@ -1,14 +1,15 @@
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useSetAtom } from "jotai";
-import { currentEntryIndexAtom } from "../state";
+import { currentEntryIndexAtom, userGaveUpAtom } from "../state";
 import AnswerInputSquare from "./AnswerInputSquare";
 
 const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   const setCurrentEntryIndex = useSetAtom(currentEntryIndexAtom);
   const [currentSquareIndex, setCurrentSquareIndex] = useState(0);
   const [userInput, setUserInput] = useState<string[]>(Array(answer.length).fill(""));
+  const setUserGaveUp = useSetAtom(userGaveUpAtom);
 
   /* Refs to always have latest values in the event handler */
   const currentSquareIndexRef = useRef(currentSquareIndex);
@@ -21,54 +22,6 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     answerRef.current = answer;
     userInputRef.current = userInput;
   }, [currentSquareIndex, answer, userInput]);
-
-  /* Handle keyboard input */
-  useEffect(() => {
-    /**
-     * Check if the user input matches the answer.
-     */
-    const submitAnswer = () => {
-      if (userInputRef.current.join("").toLowerCase() === answerRef.current.toLowerCase()) {
-        clearInput();
-        setCurrentEntryIndex((prev) => prev + 1);
-        console.log("correct!");
-      } else {
-        console.log("wrong...");
-      }
-    };
-
-    /**
-     * Clear the input and reset the current square index to 0.
-     */
-    const clearInput = () => {
-      setUserInput(Array(answerRef.current.length).fill(""));
-      setCurrentSquareIndex(0);
-    };
-
-    /**
-     * Handle keyboard input.
-     */
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Ignore input if Ctrl or Meta (Command) key is pressed
-      if (event.ctrlKey || event.metaKey) return;
-
-      const key = event.key.toUpperCase();
-      if (key.length === 1 && key >= "A" && key <= "Z") {
-        insertLetter(key);
-      } else if (event.key === "Backspace") {
-        deleteLetter();
-      } else if (event.key === "ArrowLeft") {
-        moveLeft();
-      } else if (event.key === "ArrowRight") {
-        moveRight();
-      } else if (event.key === "Enter") {
-        submitAnswer();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [setCurrentEntryIndex]);
 
   /**
    * Update the current square with the key pressed by the user.
@@ -118,11 +71,95 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     setCurrentSquareIndex((prev) => Math.min(prev + 1, answerRef.current.length - 1));
   };
 
+  /**
+   * Clear the input and reset the current square index to 0.
+   */
+  const clearInput = useCallback(() => {
+    setUserInput(Array(answerRef.current.length).fill(""));
+    setCurrentSquareIndex(0);
+  }, [setUserInput, setCurrentSquareIndex]);
+
+  /**
+   * Check if the user input matches the answer.
+   */
+  const submitAnswer = useCallback(() => {
+    if (userInputRef.current.join("").toLowerCase() === answerRef.current.toLowerCase()) {
+      clearInput();
+      setCurrentEntryIndex((prev) => prev + 1);
+      console.log("correct!");
+    } else {
+      console.log("wrong...");
+    }
+  }, [clearInput, setCurrentEntryIndex]);
+
+  /**
+   * Handle the case when the user gives up.
+   */
+  const giveUp = useCallback(() => {
+    setUserGaveUp(true);
+    setCurrentSquareIndex(-1);
+  }, [setUserGaveUp]);
+
+  /**
+   * Get ready for the next entry.
+   */
+  const goToNextEntry = () => {
+    setUserGaveUp(false);
+    setCurrentSquareIndex(0);
+    clearInput();
+    setCurrentEntryIndex((prev) => prev + 1);
+  };
+
+  /* Handle keyboard input */
+  useEffect(() => {
+    /**
+     * Handle keyboard input.
+     */
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore input if Ctrl or Meta (Command) key is pressed
+      if (event.ctrlKey || event.metaKey) return;
+
+      const key = event.key.toUpperCase();
+      if (key.length === 1 && key >= "A" && key <= "Z") {
+        insertLetter(key);
+      } else if (event.key === "Backspace") {
+        deleteLetter();
+      } else if (event.key === "ArrowLeft") {
+        moveLeft();
+      } else if (event.key === "ArrowRight") {
+        moveRight();
+      } else if (event.key === "Enter") {
+        submitAnswer();
+      } else if (event.code === "Space" || event.key === "Escape") {
+        giveUp();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [submitAnswer, giveUp]);
+
   return (
-    <div className="flex justify-center">
-      {answer.split("").map((_, idx) => (
-        <AnswerInputSquare key={idx} value={userInput[idx]} selected={currentSquareIndex === idx} />
-      ))}
+    <div>
+      <div className="flex justify-center">
+        {answer.split("").map((char, idx) => (
+          <AnswerInputSquare
+            key={idx}
+            value={userInput[idx]}
+            selected={currentSquareIndex === idx}
+            answer={char}
+          />
+        ))}
+      </div>
+      <button className="btn" onClick={submitAnswer}>
+        Enter
+      </button>
+      <button className="btn" onClick={giveUp}>
+        I don't know
+      </button>
+      <button className="btn" onClick={goToNextEntry}>
+        Next
+      </button>
     </div>
   );
 };

@@ -23,7 +23,6 @@ function App() {
           <div>
             <div className="text-4xl">{puzzleData.entries[currentEntryIndex].clue}</div>
             <AnswerInput answer={puzzleData.entries[currentEntryIndex].answer} />
-            <button className="btn">Enter</button>
           </div>
         )}
         {(allEntries.length === 0 || currentEntryIndex >= allEntries.length) && (
