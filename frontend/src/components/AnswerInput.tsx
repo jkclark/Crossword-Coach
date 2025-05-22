@@ -98,7 +98,27 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     setCurrentEntryIndex((prev) => prev + 1);
   }, [setUserGaveUp, setCurrentEntryIndex]);
 
+  const giveUpOrGoNext = useCallback(() => {
+    if (!userGaveUp) {
+      giveUp();
+    } else {
+      goToNextEntry();
+    }
+  }, [giveUp, goToNextEntry, userGaveUp]);
+
   const userInputIsFull = userInput.every((char) => char !== "");
+
+  const submitAnswerOrGoNext = useCallback(() => {
+    // If the user typed in an answer and they haven't given up yet, submit it
+    if (userInputIsFull && !userGaveUp) {
+      submitAnswer();
+    }
+
+    // If the user already gave up, go to the next entry
+    else if (userGaveUp) {
+      goToNextEntry();
+    }
+  }, [userInputIsFull, userGaveUp, submitAnswer, goToNextEntry]);
 
   /* Handle keyboard input */
   useEffect(() => {
@@ -113,11 +133,14 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
       /* Handle the Enter key */
       if (event.key === "Enter") {
-        if (userInputIsFull && !userGaveUp) {
-          submitAnswer();
-        } else if (userGaveUp) {
-          goToNextEntry();
-        }
+        submitAnswerOrGoNext();
+        return;
+      }
+
+      /* Handle the spacebar */
+      if (event.code === "Space" || event.key === " ") {
+        giveUpOrGoNext();
+        return;
       }
 
       /* If the user has given up, ignore all other keys */
@@ -131,14 +154,12 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
         moveLeft();
       } else if (event.key === "ArrowRight") {
         moveRight();
-      } else if (event.code === "Space" || event.key === "Escape") {
-        giveUp();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [submitAnswer, giveUp, userInputIsFull, userGaveUp, goToNextEntry]);
+  }, [submitAnswer, userInputIsFull, userGaveUp, giveUpOrGoNext, submitAnswerOrGoNext]);
 
   return (
     <div>
@@ -152,14 +173,13 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
           />
         ))}
       </div>
-      <button className="btn" onClick={submitAnswer} disabled={!userInputIsFull || userGaveUp}>
-        Submit
-      </button>
-      <button className="btn" onClick={giveUp} disabled={userGaveUp}>
-        I don't know
-      </button>
-      <button className="btn" onClick={goToNextEntry}>
-        Next
+      {!userGaveUp && (
+        <button className="btn" onClick={submitAnswer} disabled={!userInputIsFull}>
+          Submit
+        </button>
+      )}
+      <button className="btn" onClick={giveUpOrGoNext}>
+        {!userGaveUp ? "I don't know" : "Next"}
       </button>
     </div>
   );
