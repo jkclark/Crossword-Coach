@@ -1,0 +1,48 @@
+/**
+ * This module mainly exists to test data stores.
+ */
+import * as dotenv from "dotenv";
+
+import { CrosswordPuzzle } from "common/src/interfaces/CrosswordPuzzle";
+import MongoDBDataStore from "./data-stores/MongoDBDataStore";
+import { DataStore } from "./dataStore";
+
+dotenv.config({ path: "./.env" });
+
+async function main() {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error("MONGODB_URI environment variable is not set");
+  }
+
+  const dataStore = new MongoDBDataStore(uri);
+
+  await dataStore.connect();
+
+  // read all puzzles from folder into array of puzzle objects
+  const fs = require("fs");
+  const path = require("path");
+  const puzzlesFolderPath = path.join(__dirname, "../../temp/puzzles_filtered");
+  const puzzleFiles = fs.readdirSync(puzzlesFolderPath);
+  const puzzles: CrosswordPuzzle[] = puzzleFiles.map((fileName: string) => {
+    const filePath = path.join(puzzlesFolderPath, fileName);
+    const puzzleString = fs.readFileSync(filePath, { encoding: "utf-8" });
+    return JSON.parse(puzzleString);
+  });
+  // save each puzzle to the database
+  await savePuzzles(dataStore, puzzles);
+
+  await dataStore.close();
+}
+
+async function savePuzzles(dataStore: DataStore, puzzles: CrosswordPuzzle[]) {
+  await Promise.all(
+    puzzles.map((puzzle) => {
+      return dataStore.savePuzzle(puzzle);
+    })
+  );
+}
+
+if (require.main === module) {
+  main();
+}

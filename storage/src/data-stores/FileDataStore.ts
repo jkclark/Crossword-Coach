@@ -15,6 +15,10 @@ export default class FileDataStore implements DataStore {
     }
   }
 
+  async connect(): Promise<void> {}
+
+  async close(): Promise<void> {}
+
   // TODO: Save all clues to a file and see how big the file is
   // We need to determine what one "entry" looks like for the frontend
   // How would the frontend get the clues?

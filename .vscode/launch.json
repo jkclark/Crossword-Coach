@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug scraper",
+            "name": "Debug scraping index.ts",
             "runtimeExecutable": "npx",
             "runtimeArgs": [
                 "ts-node"
@@ -22,15 +22,16 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug current TS file",
+            "name": "Debug storage index.ts",
             "runtimeExecutable": "npx",
             "runtimeArgs": [
                 "ts-node"
             ],
-            "program": "${file}",
+            "program": "${workspaceFolder}/storage/src/index.ts",
             "skipFiles": [
                 "<node_internals>/**"
             ],
+            "cwd": "${workspaceFolder}/storage",
             "console": "integratedTerminal"
         }
     ]
