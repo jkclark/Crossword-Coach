@@ -16,6 +16,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
+            "cwd": "${workspaceFolder}/scraping",
             "console": "integratedTerminal"
         },
         {
