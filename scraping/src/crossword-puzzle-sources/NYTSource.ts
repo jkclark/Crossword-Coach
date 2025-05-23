@@ -55,6 +55,10 @@ export default class NYTSource implements CrosswordPuzzleSource {
     return puzzle;
   }
 
+  filterThemeClues(puzzle: CrosswordPuzzle): CrosswordPuzzle {
+    return puzzle;
+  }
+
   private getPuzzleURLFromDate(date: Date): string {
     return `${this.BASE_PUZZLE_URL}${date.toISOString().split("T")[0]}.json`;
   }

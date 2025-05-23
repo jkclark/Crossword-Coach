@@ -5,7 +5,7 @@ import { DataStore } from "storage/src/dataStore";
 import NYTSource from "./crossword-puzzle-sources/NYTSource";
 import CrosswordPuzzleSource from "./crosswordPuzzleSource";
 
-dotenv.config({ path: "./scraping/.env" });
+dotenv.config({ path: "./.env" });
 
 async function main(cwpSource: CrosswordPuzzleSource, dataStore: DataStore) {
   console.log("Scraping started");
@@ -20,8 +20,11 @@ async function main(cwpSource: CrosswordPuzzleSource, dataStore: DataStore) {
       console.log(`Scraping puzzle from URL: ${url}`);
       const puzzle = await cwpSource.getPuzzle(url);
 
+      /* Filter theme clues */
+      const puzzleNoThemeClues = cwpSource.filterThemeClues(puzzle);
+
       /* Store the puzzle */
-      await dataStore.savePuzzle(puzzle);
+      await dataStore.savePuzzle(puzzleNoThemeClues);
     })
   );
 }
@@ -29,7 +32,7 @@ async function main(cwpSource: CrosswordPuzzleSource, dataStore: DataStore) {
 if (require.main === module) {
   /* Puzzle source */
   const startDate = new Date("2023-01-01T00:00:00Z");
-  const endDate = new Date("2023-02-01T00:00:00Z");
+  const endDate = new Date("2023-01-02T00:00:00Z");
   const nytCookie = process.env.NYT_COOKIE;
   if (!nytCookie) {
     throw new Error("NYT_COOKIE environment variable is not set");

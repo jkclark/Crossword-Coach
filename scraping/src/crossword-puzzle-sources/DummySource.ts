@@ -14,4 +14,8 @@ export default class DummySource implements CrosswordPuzzleSource {
       entries: [{ clue: "Egyptian serpent", answer: "ASP" }],
     };
   }
+
+  filterThemeClues(puzzle: CrosswordPuzzle): CrosswordPuzzle {
+    return puzzle;
+  }
 }
