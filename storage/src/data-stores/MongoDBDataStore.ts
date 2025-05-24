@@ -1,7 +1,7 @@
 import { Db, MongoClient } from "mongodb";
 
-import { CrosswordPuzzle } from "common/src/interfaces/CrosswordPuzzle";
-import { DataStore } from "../dataStore";
+import { CrosswordPuzzle, Entry } from "common/src/interfaces/CrosswordPuzzle";
+import { DataStore, GetEntriesOptions } from "../dataStore";
 
 export default class MongoDBDataStore implements DataStore {
   private client: MongoClient;
@@ -29,6 +29,22 @@ export default class MongoDBDataStore implements DataStore {
   async close(): Promise<void> {
     await this.client.close();
     console.log("Closed MongoDB connection");
+  }
+
+  async getEntries(options: GetEntriesOptions): Promise<Entry[]> {
+    const sort: Record<string, 1 | -1> = {
+      [options.orderBy]: options.orderDirection === "ASC" ? 1 : -1,
+    };
+
+    const entries = await this.db
+      .collection<Entry>(MongoDBDataStore.ENTRIES_COLLECTION)
+      .find({})
+      .sort(sort)
+      .skip(options.page * options.pageSize)
+      .limit(options.pageSize)
+      .toArray();
+
+    return entries;
   }
 
   /**

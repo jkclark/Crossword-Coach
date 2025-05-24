@@ -19,6 +19,29 @@ async function main() {
 
   await dataStore.connect();
 
+  await doGet(dataStore);
+  // await doSave(dataStore);
+
+  await dataStore.close();
+}
+
+async function doGet(dataStore: DataStore) {
+  const options = {
+    orderBy: "_id",
+    orderDirection: "ASC",
+    pageSize: 10,
+    page: 200,
+  };
+
+  const entries = await dataStore.getEntries(options);
+
+  console.log("Entries:");
+  entries.forEach((entry) => {
+    console.log(`- ${entry.clue} (${entry.answer})`);
+  });
+}
+
+async function doSave(dataStore: DataStore) {
   // read all puzzles from folder into array of puzzle objects
   const fs = require("fs");
   const path = require("path");
@@ -31,8 +54,6 @@ async function main() {
   });
   // save each puzzle to the database
   await savePuzzles(dataStore, puzzles);
-
-  await dataStore.close();
 }
 
 async function savePuzzles(dataStore: DataStore, puzzles: CrosswordPuzzle[]) {

@@ -1,7 +1,7 @@
 import * as fs from "fs";
 
-import { CrosswordPuzzle } from "common/src/interfaces/CrosswordPuzzle";
-import { DataStore } from "../dataStore";
+import { CrosswordPuzzle, Entry } from "common/src/interfaces/CrosswordPuzzle";
+import { DataStore, GetEntriesOptions } from "../dataStore";
 
 export default class FileDataStore implements DataStore {
   entryFolder: string;
@@ -18,6 +18,10 @@ export default class FileDataStore implements DataStore {
   async connect(): Promise<void> {}
 
   async close(): Promise<void> {}
+
+  async getEntries(options: GetEntriesOptions): Promise<Entry[]> {
+    throw new Error("getEntries not implemented on FileDataStore");
+  }
 
   // TODO: Save all clues to a file and see how big the file is
   // We need to determine what one "entry" looks like for the frontend
