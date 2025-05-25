@@ -12,7 +12,7 @@
             "runtimeArgs": [
                 "ts-node"
             ],
-            "program": "${workspaceFolder}/scraping/src/index.ts",
+            "program": "${workspaceFolder}/scraping/scripts/scrape.ts",
             "skipFiles": [
                 "<node_internals>/**"
             ],
@@ -27,7 +27,7 @@
             "runtimeArgs": [
                 "ts-node"
             ],
-            "program": "${workspaceFolder}/storage/src/index.ts",
+            "program": "${workspaceFolder}/storage/scripts/sandbox.ts",
             "skipFiles": [
                 "<node_internals>/**"
             ],

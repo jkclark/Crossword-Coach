@@ -1,10 +1,11 @@
 import * as dotenv from "dotenv";
 
-import { CrosswordPuzzle } from "common/src/interfaces/CrosswordPuzzle";
-import FileDataStore from "storage/src/data-stores/FileDataStore";
-import { DataStore } from "storage/src/dataStore";
-import NYTSource from "./crossword-puzzle-sources/NYTSource";
-import CrosswordPuzzleSource from "./crosswordPuzzleSource";
+import { CrosswordPuzzle } from "../../common/src/interfaces/CrosswordPuzzle";
+import { DataStore } from "../../storage/src/DataStore";
+import FileDataStore from "../../storage/src/data-stores/FileDataStore";
+
+import NYTSource from "../src/crossword-puzzle-sources/NYTSource";
+import CrosswordPuzzleSource from "../src/crosswordPuzzleSource";
 
 dotenv.config({ path: "./.env" });
 
@@ -74,7 +75,7 @@ function clueReferencesOtherClue(clue: string): boolean {
 if (require.main === module) {
   /* Puzzle source */
   const startDate = new Date("2023-01-01T00:00:00Z");
-  const endDate = new Date("2023-02-01T00:00:00Z");
+  const endDate = new Date("2023-01-01T00:00:00Z");
   const nytCookie = process.env.NYT_COOKIE;
   if (!nytCookie) {
     throw new Error("NYT_COOKIE environment variable is not set");

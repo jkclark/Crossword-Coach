@@ -1,4 +1,4 @@
-import { CrosswordPuzzle, Entry } from "common/src/interfaces/CrosswordPuzzle";
+import { CrosswordPuzzle, Entry } from "common";
 
 export interface DataStore {
   connect(): Promise<void>;

@@ -1,7 +1,8 @@
 import { Db, MongoClient } from "mongodb";
 
-import { CrosswordPuzzle, Entry } from "common/src/interfaces/CrosswordPuzzle";
-import { DataStore, GetEntriesOptions } from "../dataStore";
+import { CrosswordPuzzle, Entry } from "common";
+
+import { DataStore, GetEntriesOptions } from "../DataStore";
 
 export default class MongoDBDataStore implements DataStore {
   private client: MongoClient;
@@ -72,7 +73,7 @@ export default class MongoDBDataStore implements DataStore {
     /* Insert entries */
     const entriesCollection = this.db.collection(MongoDBDataStore.ENTRIES_COLLECTION);
     await Promise.all(
-      entries.map((entry) => {
+      entries.map((entry: Entry) => {
         return entriesCollection.updateOne(
           // Identify the entry by its clue and answer
           { clue: entry.clue, answer: entry.answer },

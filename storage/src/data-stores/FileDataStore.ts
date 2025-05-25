@@ -1,7 +1,8 @@
 import * as fs from "fs";
 
-import { CrosswordPuzzle, Entry } from "common/src/interfaces/CrosswordPuzzle";
-import { DataStore, GetEntriesOptions } from "../dataStore";
+import { CrosswordPuzzle, Entry } from "common";
+
+import { DataStore, GetEntriesOptions } from "../DataStore";
 
 export default class FileDataStore implements DataStore {
   entryFolder: string;

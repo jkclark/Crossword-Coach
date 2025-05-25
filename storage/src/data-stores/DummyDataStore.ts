@@ -1,5 +1,6 @@
-import { CrosswordPuzzle, Entry } from "common/src/interfaces/CrosswordPuzzle";
-import { DataStore } from "../dataStore";
+import { CrosswordPuzzle, Entry } from "common";
+
+import { DataStore } from "../DataStore";
 
 export default class DummyDataStore implements DataStore {
   async connect(): Promise<void> {}

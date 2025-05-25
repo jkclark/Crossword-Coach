@@ -4,15 +4,23 @@
   "description": "A tool for drilling crossword clues quickly",
   "main": "index.js",
   "scripts": {
-    "build": "tsc --build",
-    "clean": "tsc --build --clean",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm -rf *.tsbuildinfo ./*/dist ./*/*.tsbuildinfo api_lambda_package api_lambda_package.zip",
+    "build": "tsc -b",
+    "create-api-lambda-package-dir": "mkdir api_lambda_package",
+    "npm-init-api-lambda-package": "cd api_lambda_package && npm init -y",
+    "merge-api-lambda-package-jsons": "cd api_lambda_package && jq -s '.[0] * .[1] * .[2]' ../api/package.json ../common/package.json ../storage/package.json > package.json",
+    "install-api-lambda-dependencies": "cd api_lambda_package && npm install",
+    "build-api-lambda-package": "cd api_lambda_package && tsc --project ../api/tsconfig.deploy.json --typeRoots ./node_modules/@types",
+    "copy-api-lambda-deps": "cp -r ./common/dist ./api_lambda_package/common && cp -r ./storage/dist ./api_lambda_package/storage",
+    "zip-api-lambda-package": "cd api_lambda_package && zip -r ../api_lambda_package.zip *",
+    "generate-api-lambda-zip": "npm run clean && npm run build && npm run create-api-lambda-package-dir && npm run npm-init-api-lambda-package && npm run merge-api-lambda-package-jsons && npm run install-api-lambda-dependencies && npm run build-api-lambda-package && npm run copy-api-lambda-deps && npm run zip-api-lambda-package"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "private": true,
   "workspaces": [
+    "api",
     "common",
     "scraping",
     "storage"

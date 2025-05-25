@@ -11,5 +11,8 @@
   "description": "",
   "dependencies": {
     "@types/aws-lambda": "^8.10.149"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21"
   }
 }

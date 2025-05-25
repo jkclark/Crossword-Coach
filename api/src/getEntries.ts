@@ -1,7 +1,6 @@
 import { APIGatewayProxyEvent, Context, Handler } from "aws-lambda";
 
-import MongoDBDataStore from "storage/src/data-stores/MongoDBDataStore";
-import { GetEntriesOptions } from "storage/src/dataStore";
+import { GetEntriesOptions, MongoDBDataStore } from "storage";
 
 // Connect to MongoDB *outside* the handler to reuse the connection when possible
 let mongoDBDataStore: MongoDBDataStore | null = null;
