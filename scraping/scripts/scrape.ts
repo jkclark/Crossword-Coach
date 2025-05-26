@@ -4,7 +4,7 @@ import { CrosswordPuzzle } from "../../common/src/interfaces/CrosswordPuzzle";
 import { DataStore } from "../../storage/src/DataStore";
 import FileDataStore from "../../storage/src/data-stores/FileDataStore";
 
-import NYTSource from "../src/crossword-puzzle-sources/NYTSource";
+import WSJSource from "../src/crossword-puzzle-sources/WSJSource";
 import CrosswordPuzzleSource from "../src/crosswordPuzzleSource";
 
 dotenv.config({ path: "./.env" });
@@ -76,14 +76,18 @@ if (require.main === module) {
   /* Puzzle source */
   const startDate = new Date("2023-01-01T00:00:00Z");
   const endDate = new Date("2023-01-01T00:00:00Z");
-  const nytCookie = process.env.NYT_COOKIE;
-  if (!nytCookie) {
-    throw new Error("NYT_COOKIE environment variable is not set");
+  // const cookie = process.env.NYT_COOKIE;
+  const cookie = process.env.WSJ_COOKIE;
+
+  if (!cookie) {
+    throw new Error("..._COOKIE environment variable is not set");
   }
-  const dummySource = new NYTSource(startDate, endDate, nytCookie);
+
+  // const dataSource = new NYTSource(startDate, endDate, cookie);
+  const dataSource = new WSJSource(startDate, endDate, cookie);
 
   /* Data store */
   const dummyDataStore = new FileDataStore("../temp/puzzles_filtered");
 
-  main(dummySource, dummyDataStore);
+  main(dataSource, dummyDataStore);
 }
