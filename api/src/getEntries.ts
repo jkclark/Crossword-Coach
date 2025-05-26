@@ -8,6 +8,14 @@ let mongoDBDataStore: MongoDBDataStore | null = null;
 let connectionPromise: Promise<void> | null;
 
 export const handler: Handler = async (event: APIGatewayProxyEvent, context: Context) => {
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 204, // No Content for preflight requests
+      headers: getCORSHeaders(),
+      body: "",
+    };
+  }
+
   const dataStore = await getDataStore();
 
   const { queryStringParameters } = event;
@@ -15,6 +23,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent, context: Con
   if (!queryStringParameters) {
     return {
       statusCode: 400,
+      headers: getCORSHeaders(),
       body: JSON.stringify({ error: "Missing query parameters" }),
     };
   }
@@ -26,13 +35,21 @@ export const handler: Handler = async (event: APIGatewayProxyEvent, context: Con
     /* Get entries */
     const entries = await dataStore.getEntries(options);
 
+    /* Only return clue and answer for each entry */
+    const cluesAndAnswers = entries.map((entry) => ({
+      clue: entry.clue,
+      answer: entry.answer,
+    }));
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ entries }),
+      headers: getCORSHeaders(),
+      body: JSON.stringify({ entries: cluesAndAnswers }),
     };
   } catch (error) {
     return {
       statusCode: 400,
+      headers: getCORSHeaders(),
       body: JSON.stringify({ error: (error as Error).message }),
     };
   }
@@ -93,7 +110,15 @@ function parseGetEntriesOptions(params: { [key: string]: string | undefined }): 
   return {
     orderBy,
     orderDirection,
-    pageSize: pageNum,
+    pageSize: pageSizeNum,
     page: pageNum,
+  };
+}
+
+function getCORSHeaders(): { [key: string]: string } {
+  return {
+    "Access-Control-Allow-Origin": "*", // Fine for development
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
   };
 }

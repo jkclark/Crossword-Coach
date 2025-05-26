@@ -1,19 +1,13 @@
-import { useAtom, useAtomValue } from "jotai";
+import { useAtomValue } from "jotai";
 
-import { useEffect } from "react";
-import puzzleData from "../../temp/puzzles_filtered/NYT-2023-01-01.json";
 import AnswerInput from "./components/AnswerInput";
 import Navbar from "./components/Navbar";
-import { allEntriesAtom, currentEntryIndexAtom } from "./state";
+import { currentEntryIndexAtom } from "./state";
+import { useEntries } from "./useEntries";
 
 function App() {
-  const [allEntries, setAllEntries] = useAtom(allEntriesAtom);
   const currentEntryIndex = useAtomValue(currentEntryIndexAtom);
-
-  // Temporarily use the puzzle data from the JSON file
-  useEffect(() => {
-    setAllEntries(puzzleData.entries);
-  }, [setAllEntries]);
+  const allEntries = useEntries(currentEntryIndex);
 
   return (
     <>
@@ -22,9 +16,9 @@ function App() {
         {allEntries && currentEntryIndex >= 0 && currentEntryIndex < allEntries.length && (
           <div>
             <div className="w-full text-[clamp(1rem,5vw,2.5rem)] break-words mb-3">
-              {puzzleData.entries[currentEntryIndex].clue}
+              {allEntries[currentEntryIndex].clue}
             </div>
-            <AnswerInput key={currentEntryIndex} answer={puzzleData.entries[currentEntryIndex].answer} />
+            <AnswerInput key={currentEntryIndex} answer={allEntries[currentEntryIndex].answer} />
           </div>
         )}
         {(allEntries.length === 0 || currentEntryIndex >= allEntries.length) && (
