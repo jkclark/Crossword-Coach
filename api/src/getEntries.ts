@@ -1,3 +1,4 @@
+import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
 import { APIGatewayProxyEvent, Context, Handler } from "aws-lambda";
 
 import { GetEntriesOptions, MongoDBDataStore } from "storage";
@@ -52,31 +53,47 @@ async function getDataStore(): Promise<MongoDBDataStore> {
 }
 
 async function getMongoDBURI(): Promise<string> {
-  return "REPLACE_ME";
+  const client = new SSMClient({});
+  const command = new GetParameterCommand({
+    Name: process.env.MONGODB_URI_PARAMETER_NAME,
+    WithDecryption: true,
+  });
+  const response = await client.send(command);
+  if (!response.Parameter?.Value) {
+    throw new Error("MongoDB URI not found in AWS Parameter Store");
+  }
+  return response.Parameter.Value;
 }
 
 function parseGetEntriesOptions(params: { [key: string]: string | undefined }): GetEntriesOptions {
-  const { orderBy, orderDirection, pageSizeParam, pageParam } = params;
+  const { orderBy, orderDirection, pageSize, page } = params;
 
-  if (!orderBy || !orderDirection || !pageSizeParam || !pageParam) {
-    throw new Error("Missing required GetEntriesOptions options");
+  console.log("Parsing GetEntriesOptions query params:", {
+    orderBy,
+    orderDirection,
+    pageSize,
+    page,
+  });
+
+  if (!orderBy || !orderDirection || !pageSize || !page) {
+    throw new Error("Missing required GetEntriesOptions query parameters");
   }
 
   if (orderDirection !== "ASC" && orderDirection !== "DESC") {
     throw new Error("Invalid orderDirection. Must be 'ASC' or 'DESC'");
   }
 
-  const pageSize = parseInt(pageSizeParam, 10);
-  const page = parseInt(pageParam, 10);
+  const pageSizeNum = parseInt(pageSize, 10);
+  const pageNum = parseInt(page, 10);
 
-  if (isNaN(pageSize) || isNaN(page)) {
+  if (isNaN(pageSizeNum) || isNaN(pageNum)) {
     throw new Error("Invalid pageSize or page. Must be integers");
   }
 
   return {
     orderBy,
     orderDirection,
-    pageSize,
-    page,
+    pageSize: pageNum,
+    page: pageNum,
   };
 }
