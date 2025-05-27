@@ -2,17 +2,24 @@ import { ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useAtom, useSetAtom } from "jotai";
-import { currentEntryIndexAtom, userGaveUpAtom } from "../state";
+import { useSetAtom } from "jotai";
+import { currentEntryIndexAtom } from "../state";
 import AnswerInputSquare from "./AnswerInputSquare";
 
 const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   const setCurrentEntryIndex = useSetAtom(currentEntryIndexAtom);
   const [currentSquareIndex, setCurrentSquareIndex] = useState(0);
   const [userInput, setUserInput] = useState<string[]>(Array(answer.length).fill(""));
-  const [userGaveUp, setUserGaveUp] = useAtom(userGaveUpAtom);
+  const [revealedIndexes, setRevealedIndexes] = useState<number[]>([]);
+
+  /* Animation */
   const [jumpingIndexes, setJumpingIndexes] = useState<number[]>([]);
   const [isShaking, setIsShaking] = useState(false);
+
+  /* Derived state */
+  const allLettersRevealed = revealedIndexes.length >= answer.length; // In theory should never be greater than
+  const userInputIsFull = userInput.every((char) => char !== "");
+  const submitOrNextButtonDisabled = !allLettersRevealed && !userInputIsFull;
 
   /* Refs to always have latest values in the event handler */
   const currentSquareIndexRef = useRef(currentSquareIndex);
@@ -27,64 +34,135 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   }, [currentSquareIndex, answer, userInput]);
 
   /**
+   * Get the index of the previous non-revealed square, or null if none exists.
+   */
+  const getPreviousNonRevealedIndex = useCallback(
+    (index: number) => {
+      let nextIndex = index - 1;
+
+      /* Check indexes to the left until we find a non-revealed, in-bounds square */
+      while (nextIndex >= 0 && revealedIndexes.includes(nextIndex)) {
+        nextIndex--;
+      }
+
+      /* If we never find a non-revealed, in-bounds square, return null */
+      if (nextIndex < 0) {
+        return null;
+      }
+
+      /* Return the previous non-revealed, in-bounds square index */
+      return nextIndex;
+    },
+    [revealedIndexes]
+  );
+
+  /**
+   * Get the index of the next non-revealed square, or null if none exists.
+   */
+  const getNextNonRevealedIndex = useCallback(
+    (current: number) => {
+      let nextIndex = current + 1;
+
+      /* Check indexes to the right until we find a non-revealed, in-bounds square */
+      while (nextIndex < answerRef.current.length && revealedIndexes.includes(nextIndex)) {
+        nextIndex++;
+      }
+
+      /* If we never find a non-revealed, in-bounds square, return the current index */
+      if (nextIndex >= answerRef.current.length) {
+        return null;
+      }
+
+      /* Return the next non-revealed, in-bounds square index */
+      return nextIndex;
+    },
+    [revealedIndexes]
+  );
+
+  /**
+   * Navigate to the square to the left of the current square, skipping revealed squares.
+   */
+  const moveLeft = useCallback(() => {
+    setCurrentSquareIndex((prev) => getPreviousNonRevealedIndex(prev) ?? prev);
+  }, [getPreviousNonRevealedIndex]);
+
+  /**
+   * Navigate to the square to the right of the current square, skipping revealed squares.
+   */
+  const moveRight = useCallback(() => {
+    setCurrentSquareIndex((prev) => getNextNonRevealedIndex(prev) ?? prev);
+  }, [getNextNonRevealedIndex]);
+
+  /**
    * Update the current square with the key pressed by the user.
    *
    * @param key The key pressed by the user.
    */
-  const insertLetter = (key: string) => {
-    setUserInput((prev) => {
-      const newInput = [...prev];
-      newInput[currentSquareIndexRef.current] = key;
-      return newInput;
-    });
+  const insertLetter = useCallback(
+    (key: string) => {
+      setUserInput((prev) => {
+        /* If the current square has already been revealed, do nothing */
+        if (revealedIndexes.includes(currentSquareIndexRef.current)) {
+          return prev;
+        }
 
-    setCurrentSquareIndex((prev) => Math.min(prev + 1, answerRef.current.length - 1));
-  };
+        const newInput = [...prev];
+        newInput[currentSquareIndexRef.current] = key;
+        return newInput;
+      });
+
+      /* Move the current square to the next non-revealed square */
+      moveRight();
+    },
+    [revealedIndexes, moveRight]
+  );
 
   /**
    * Clear the current square, or move left and clear that square if the current square is already empty.
    */
-  const deleteLetter = () => {
-    setUserInput((prev) => {
-      const newInput = [...prev];
-      const idx = currentSquareIndexRef.current;
-      if (newInput[idx] === "" && idx > 0) {
-        // Move left and clear previous square
-        newInput[idx - 1] = "";
-        setCurrentSquareIndex(idx - 1);
-      } else {
-        // Clear current square
-        newInput[idx] = "";
-      }
-      return newInput;
-    });
-  };
+  const deleteLetter = useCallback(() => {
+    const index = currentSquareIndexRef.current;
 
-  /**
-   * Navigate to the square to the left of the current square.
-   */
-  const moveLeft = () => {
-    setCurrentSquareIndex((prev) => Math.max(prev - 1, 0));
-  };
+    /* If the current square is revealed, do nothing */
+    if (revealedIndexes.includes(index)) {
+      console.log(`Square ${index} is revealed, skipping deletion`);
+      return;
+    }
 
-  /**
-   * Navigate to the square to the right of the current square.
-   */
-  const moveRight = () => {
-    setCurrentSquareIndex((prev) => Math.min(prev + 1, answerRef.current.length - 1));
-  };
+    /* If the current square is not empty, clear it */
+    if (userInputRef.current[index] !== "") {
+      setUserInput((prev) => {
+        const newInput = [...prev];
+        newInput[index] = "";
+        return newInput;
+      });
+      return;
+    }
+
+    /* If the current square is empty, clear the previous square and move left */
+    const previousIndex = getPreviousNonRevealedIndex(index);
+    if (previousIndex !== null) {
+      setUserInput((prev) => {
+        const newInput = [...prev];
+        newInput[previousIndex] = "";
+        return newInput;
+      });
+
+      // NOTE: This could equivalently be done with `setCurrentSquareIndex(previousIndex)`,
+      moveLeft();
+    }
+  }, [revealedIndexes, getPreviousNonRevealedIndex, moveLeft]);
 
   /**
    * Get ready for the next entry.
    */
   const goToNextEntry = useCallback(() => {
-    // NOTE: We don't have to reset the user input or the current square index
+    // NOTE: We don't have to reset the user input, current square index, or revealed indexes
     // here, because the user input and the current square index are reset in
     // the parent component when the entry (and thus this component's key) changes,
     // unmounting and remounting this component.
-    setUserGaveUp(false);
     setCurrentEntryIndex((prev) => prev + 1);
-  }, [setUserGaveUp, setCurrentEntryIndex]);
+  }, [setCurrentEntryIndex]);
 
   /**
    * Check if the user input matches the answer.
@@ -110,33 +188,70 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   }, [goToNextEntry]);
 
   /**
-   * Handle the case when the user gives up.
+   * Reveal a random unrevealed letter.
    */
-  const giveUp = useCallback(() => {
-    setUserGaveUp(true);
-  }, [setUserGaveUp]);
+  const revealRandomLetter = useCallback(() => {
+    /* Find all unrevealed indexes */
+    const unrevealedIndexes = answerRef.current
+      .split("")
+      .map((_, idx) => idx)
+      .filter((idx) => !revealedIndexes.includes(idx));
 
-  const giveUpOrGoNext = useCallback(() => {
-    if (!userGaveUp) {
-      giveUp();
+    /* If no unrevealed letters remain, do nothing */
+    if (unrevealedIndexes.length === 0) return;
+
+    /* Pick a random unrevealed index */
+    const randomIndex = unrevealedIndexes[Math.floor(Math.random() * unrevealedIndexes.length)];
+
+    /* Add it to the revealed indexes */
+    setRevealedIndexes((prev) => [...prev, randomIndex]);
+
+    /* Update the user input to match the answer */
+    setUserInput((prev) => {
+      const newInput = [...prev];
+      newInput[randomIndex] = answerRef.current[randomIndex];
+      return newInput;
+    });
+
+    /* Update current square index if necessary */
+    if (currentSquareIndexRef.current === randomIndex) {
+      setCurrentSquareIndex((prev) => {
+        // Go to the next unrevealed square, or the previous unrevealed square
+        // if there are no more unrevealed squares to the right
+        const nextIndex = getNextNonRevealedIndex(prev);
+        if (nextIndex !== null) {
+          return nextIndex;
+        }
+
+        const previousIndex = getPreviousNonRevealedIndex(prev);
+        if (previousIndex !== null) {
+          return previousIndex;
+        }
+
+        return prev;
+      });
+    }
+  }, [revealedIndexes, getPreviousNonRevealedIndex, getNextNonRevealedIndex]);
+
+  const revealRandomLetterOrGoNext = useCallback(() => {
+    if (!allLettersRevealed) {
+      revealRandomLetter();
     } else {
       goToNextEntry();
     }
-  }, [giveUp, goToNextEntry, userGaveUp]);
-
-  const userInputIsFull = userInput.every((char) => char !== "");
+  }, [allLettersRevealed, revealRandomLetter, goToNextEntry]);
 
   const submitAnswerOrGoNext = useCallback(() => {
     // If the user typed in an answer and they haven't given up yet, submit it
-    if (userInputIsFull && !userGaveUp) {
+    if (userInputIsFull && !allLettersRevealed) {
       submitAnswer();
     }
 
     // If the user already gave up, go to the next entry
-    else if (userGaveUp) {
+    else if (allLettersRevealed) {
       goToNextEntry();
     }
-  }, [userInputIsFull, userGaveUp, submitAnswer, goToNextEntry]);
+  }, [userInputIsFull, allLettersRevealed, submitAnswer, goToNextEntry]);
 
   /* Handle keyboard input */
   useEffect(() => {
@@ -151,18 +266,19 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
       /* Handle the Enter key */
       if (event.key === "Enter") {
+        event.preventDefault();
         submitAnswerOrGoNext();
         return;
       }
 
       /* Handle the spacebar */
       if (event.code === "Space" || event.key === " ") {
-        giveUpOrGoNext();
+        revealRandomLetterOrGoNext();
         return;
       }
 
       /* If the user has given up, ignore all other keys */
-      if (userGaveUp) return;
+      if (allLettersRevealed) return;
 
       if (key.length === 1 && key >= "A" && key <= "Z") {
         insertLetter(key);
@@ -177,7 +293,17 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [submitAnswer, userInputIsFull, userGaveUp, giveUpOrGoNext, submitAnswerOrGoNext]);
+  }, [
+    submitAnswer,
+    moveLeft,
+    moveRight,
+    insertLetter,
+    deleteLetter,
+    allLettersRevealed,
+    userInputIsFull,
+    revealRandomLetterOrGoNext,
+    submitAnswerOrGoNext,
+  ]);
 
   const animateCorrectAnswer = (delayBetweenJumps: number) => {
     for (let i = 0; i < answerRef.current.length; i++) {
@@ -186,8 +312,6 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       }, i * delayBetweenJumps); // 120ms delay between jumps
     }
   };
-
-  const submitOrNextButtonDisabled = userGaveUp ? false : !userInputIsFull;
 
   return (
     <>
@@ -198,6 +322,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
             value={userInput[idx]}
             selected={currentSquareIndex === idx}
             answer={char}
+            revealed={revealedIndexes.includes(idx)}
             jumping={jumpingIndexes.includes(idx)}
           />
         ))}
@@ -206,15 +331,15 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       <div className="flex flex-row justify-center gap-2">
         <button
           className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
-          onClick={giveUp}
-          disabled={userGaveUp}
+          onClick={revealRandomLetter}
+          disabled={allLettersRevealed}
         >
-          I don't know
+          Give me a letter
         </button>
 
         <button
           className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
-          onClick={userGaveUp ? goToNextEntry : submitAnswer}
+          onClick={submitAnswerOrGoNext}
           disabled={submitOrNextButtonDisabled}
         >
           <ArrowRightCircleIcon className="size-7" />
