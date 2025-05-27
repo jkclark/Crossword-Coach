@@ -19,9 +19,9 @@ async function main() {
   const dataStore = new MongoDBDataStore(uri);
 
   await dataStore.connect();
+  // await doGet(dataStore);
 
-  await doGet(dataStore);
-  // await doSave(dataStore);
+  await doSave(dataStore);
 
   await dataStore.close();
 }
@@ -51,7 +51,9 @@ async function doSave(dataStore: DataStore) {
   const puzzles: CrosswordPuzzle[] = puzzleFiles.map((fileName: string) => {
     const filePath = path.join(puzzlesFolderPath, fileName);
     const puzzleString = fs.readFileSync(filePath, { encoding: "utf-8" });
-    return JSON.parse(puzzleString);
+    const parsedPuzzle = JSON.parse(puzzleString);
+    parsedPuzzle.date = new Date(parsedPuzzle.date);
+    return parsedPuzzle;
   });
   // save each puzzle to the database
   await savePuzzles(dataStore, puzzles);

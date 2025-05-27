@@ -9,7 +9,6 @@ export default class MongoDBDataStore implements DataStore {
   private db: Db;
 
   private static readonly DATABASE_NAME = "crosswordcoach";
-  private static readonly PUZZLE_COLLECTION = "puzzles";
   private static readonly ENTRIES_COLLECTION = "entries";
 
   constructor(uri: string) {
@@ -62,31 +61,49 @@ export default class MongoDBDataStore implements DataStore {
 
     /* Separate the entries from the puzzle metadata */
     const { entries, ...puzzleMetadata } = puzzle;
-
-    /* Insert puzzle metadata */
-    await this.db.collection(MongoDBDataStore.PUZZLE_COLLECTION).updateOne(
-      { id: puzzle.id }, // Match by unique puzzle id
-      { $set: puzzleMetadata },
-      { upsert: true }
-    );
+    const dayOfWeek = puzzleMetadata.date.getUTCDay();
 
     /* Insert entries */
     const entriesCollection = this.db.collection(MongoDBDataStore.ENTRIES_COLLECTION);
     await Promise.all(
       entries.map((entry: Entry) => {
         return entriesCollection.updateOne(
-          // Identify the entry by its clue and answer
+          /* Identify the entry by clue and answer */
           { clue: entry.clue, answer: entry.answer },
-
-          // Update the entry with the puzzle ID (regardless of whether it's already present)
-          { $addToSet: { puzzle_ids: puzzle.id } },
-
-          // Create the entry if it doesn't exist, otherwise update it
+          /* Aggregation pipeline */
+          [
+            {
+              $set: {
+                clue: entry.clue,
+                answer: entry.answer,
+                sourcesToDaysOfWeek: {
+                  $mergeObjects: [
+                    "$sourcesToDaysOfWeek",
+                    {
+                      [puzzleMetadata.source]: {
+                        $cond: [
+                          { $isArray: { $ifNull: [`$sourcesToDaysOfWeek.${puzzleMetadata.source}`, null] } },
+                          { $setUnion: [`$sourcesToDaysOfWeek.${puzzleMetadata.source}`, [dayOfWeek]] },
+                          [dayOfWeek],
+                        ],
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          ],
           { upsert: true }
         );
       })
     );
 
     console.log(`Inserted puzzle ${puzzle.id} into the database`);
+  }
+
+  async deleteAll(): Promise<void> {
+    await this.connect();
+    await this.db.collection(MongoDBDataStore.ENTRIES_COLLECTION).deleteMany({});
+    console.log("Deleted all entries and puzzles from the database");
   }
 }
