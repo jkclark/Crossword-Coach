@@ -187,7 +187,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   };
 
   return (
-    <div>
+    <>
       <div className={`flex justify-center mb-5 ${isShaking ? "animate-shake" : ""}`}>
         {answer.split("").map((char, idx) => (
           <AnswerInputSquare
@@ -200,28 +200,32 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
         ))}
       </div>
 
-      {!userGaveUp && (
-        <button className="btn mr-2 py-[1em] text-[clamp(0.5rem,2vw,1.5rem)]" onClick={giveUp}>
+      <div className="flex flex-row justify-center gap-2">
+        <button
+          className="btn py-[1em] text-[clamp(0.5rem,2vw,1.5rem)]"
+          onClick={giveUp}
+          disabled={userGaveUp}
+        >
           I don't know
         </button>
-      )}
 
-      {!userGaveUp && (
         <button
-          className="btn ml-2 py-[1em] text-[clamp(0.5rem,2vw,1.5rem)]"
+          className="btn py-[1em] text-[clamp(0.5rem,2vw,1.5rem)]"
           onClick={submitAnswer}
-          disabled={!userInputIsFull}
+          disabled={userGaveUp || !userInputIsFull}
         >
           Submit
         </button>
-      )}
 
-      {userGaveUp && (
-        <button className="btn py-[1em] text-[clamp(0.5rem,2vw,1.5rem)]" onClick={goToNextEntry}>
+        <button
+          className="btn py-[1em] text-[clamp(0.5rem,2vw,1.5rem)]"
+          onClick={goToNextEntry}
+          disabled={!userGaveUp}
+        >
           Next
         </button>
-      )}
-    </div>
+      </div>
+    </>
   );
 };
 
