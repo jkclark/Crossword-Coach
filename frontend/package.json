@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@crosswordcoach/common": "*",
-    "@crosswordcoach/storage": "*",
+    "@crosswordcoach/common": "file:../common",
+    "@crosswordcoach/storage": "file:../storage",
     "@tailwindcss/vite": "^4.1.7",
     "daisyui": "^5.0.35",
     "jotai": "^2.12.4",
