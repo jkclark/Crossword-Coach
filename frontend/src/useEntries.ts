@@ -1,11 +1,12 @@
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useRef } from "react";
-import { allEntriesAtom } from "./state";
+import { allEntriesAtom, isLoadingEntriesAtom } from "./state";
 
 import type { Entry } from "@crosswordcoach/common";
 import type { GetEntriesOptions } from "@crosswordcoach/storage";
 
 export function useEntries(currentEntryIndex: number) {
+  const [isLoadingEntries, setIsLoadingEntries] = useAtom(isLoadingEntriesAtom);
   const [allEntries, setAllEntries] = useAtom(allEntriesAtom);
 
   /* Track which pages have already been fetched */
@@ -18,6 +19,8 @@ export function useEntries(currentEntryIndex: number) {
 
       /* Mark this page as having been fetched */
       fetchedPages.current.add(page);
+
+      setIsLoadingEntries(true);
 
       const API_URL = buildAPIURL({
         orderBy: "_id",
@@ -40,9 +43,11 @@ export function useEntries(currentEntryIndex: number) {
 
         /* If we failed to fetch this page, remove it from the set */
         fetchedPages.current.delete(page);
+      } finally {
+        setIsLoadingEntries(false);
       }
     },
-    [setAllEntries]
+    [setAllEntries, setIsLoadingEntries]
   );
 
   /**
