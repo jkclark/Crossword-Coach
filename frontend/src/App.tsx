@@ -4,11 +4,14 @@ import AnswerInput from "./components/AnswerInput";
 import Navbar from "./components/Navbar";
 import { currentEntryIndexAtom, isLoadingEntriesAtom } from "./state";
 import { useEntries } from "./useEntries";
+import { useMinimumLoading } from "./useMinimumLoading";
 
 function App() {
   const currentEntryIndex = useAtomValue(currentEntryIndexAtom);
   const isLoadingEntries = useAtomValue(isLoadingEntriesAtom);
   const allEntries = useEntries(currentEntryIndex);
+
+  const isLoadingAtLeast1Second = useMinimumLoading(isLoadingEntries, 1000);
 
   // Move the divs to variables
   const loadingDiv = (
@@ -34,9 +37,7 @@ function App() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <div className="container mx-auto text-center flex flex-col justify-center items-center flex-1">
-        {isLoadingEntries && (allEntries.length === 0 || currentEntryIndex >= allEntries.length)
-          ? loadingDiv
-          : entryDisplayDiv || noEntriesLeftDiv}
+        {isLoadingAtLeast1Second ? loadingDiv : entryDisplayDiv || noEntriesLeftDiv}
       </div>
     </div>
   );
