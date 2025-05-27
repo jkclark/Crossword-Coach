@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 
 import { CrosswordPuzzle, getEmptyPuzzle } from "@crosswordcoach/common";
+import puppeteer from "puppeteer";
 import CrosswordPuzzleSource from "../crosswordPuzzleSource";
 
 export default class WSJSource implements CrosswordPuzzleSource {
@@ -115,24 +116,21 @@ export default class WSJSource implements CrosswordPuzzleSource {
   }
 
   async getHTMLFromWSJ(url: string): Promise<string> {
-    const response = await this.getFromWSJ(url);
-    const html = await response.text();
-    return html;
-  }
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
 
-  async getFromWSJ(url: string): Promise<Response> {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-        Cookie: this.cookie,
-      },
+    await page.setExtraHTTPHeaders({ Cookie: this.cookie });
+
+    await page.setUserAgent(
+      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    );
+
+    await page.goto(url, {
+      waitUntil: "networkidle2",
     });
+    const html = await page.content();
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch from WSJ: ${response.statusText}`);
-    }
-
-    return response;
+    await browser.close();
+    return html;
   }
 }
