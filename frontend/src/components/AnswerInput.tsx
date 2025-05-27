@@ -1,3 +1,4 @@
+import { ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -186,6 +187,8 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     }
   };
 
+  const submitOrNextButtonDisabled = userGaveUp ? false : !userInputIsFull;
+
   return (
     <>
       <div className={`flex justify-center mb-5 ${isShaking ? "animate-shake" : ""}`}>
@@ -202,7 +205,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
       <div className="flex flex-row justify-center gap-2">
         <button
-          className="btn py-[1em] text-[clamp(0.5rem,2vw,1.5rem)]"
+          className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
           onClick={giveUp}
           disabled={userGaveUp}
         >
@@ -210,19 +213,11 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
         </button>
 
         <button
-          className="btn py-[1em] text-[clamp(0.5rem,2vw,1.5rem)]"
-          onClick={submitAnswer}
-          disabled={userGaveUp || !userInputIsFull}
+          className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
+          onClick={userGaveUp ? goToNextEntry : submitAnswer}
+          disabled={submitOrNextButtonDisabled}
         >
-          Submit
-        </button>
-
-        <button
-          className="btn py-[1em] text-[clamp(0.5rem,2vw,1.5rem)]"
-          onClick={goToNextEntry}
-          disabled={!userGaveUp}
-        >
-          Next
+          <ArrowRightCircleIcon className="size-7" />
         </button>
       </div>
     </>

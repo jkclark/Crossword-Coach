@@ -12,6 +12,7 @@
   "dependencies": {
     "@crosswordcoach/common": "file:../common",
     "@crosswordcoach/storage": "file:../storage",
+    "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.1.7",
     "daisyui": "^5.0.35",
     "jotai": "^2.12.4",
