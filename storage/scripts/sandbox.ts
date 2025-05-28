@@ -19,19 +19,21 @@ async function main() {
   const dataStore = new MongoDBDataStore(uri);
 
   await dataStore.connect();
-  // await doGet(dataStore);
+  await doGet(dataStore);
 
-  await doSave(dataStore);
+  // await doSave(dataStore);
 
   await dataStore.close();
 }
 
 async function doGet(dataStore: DataStore) {
   const options = {
+    source: "NYT",
+    dayOfWeek: 0,
     orderBy: "_id",
     orderDirection: "ASC",
     pageSize: 10,
-    page: 200,
+    page: 0,
   };
 
   const entries = await dataStore.getEntries(options);

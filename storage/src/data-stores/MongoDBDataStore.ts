@@ -32,13 +32,31 @@ export default class MongoDBDataStore implements DataStore {
   }
 
   async getEntries(options: GetEntriesOptions): Promise<Entry[]> {
+    /* Filter */
+    const filter: Record<string, any> = {};
+    if (options.source && options.dayOfWeek !== undefined) {
+      // Filter by source and day of week
+      filter.$and = [
+        { [`sourcesToDaysOfWeek.${options.source}`]: { $exists: true } },
+        { [`sourcesToDaysOfWeek.${options.source}`]: { $type: "array" } },
+        { [`sourcesToDaysOfWeek.${options.source}`]: { $ne: [] } },
+        { [`sourcesToDaysOfWeek.${options.source}`]: { $in: [options.dayOfWeek] } },
+      ];
+    } else if (options.source) {
+      // Filter by source
+      filter[`sourcesToDaysOfWeek.${options.source}`] = { $exists: true, $not: { $size: 0 } };
+    } else if (options.dayOfWeek !== undefined) {
+      throw new Error("Day-of-week-only filtering is not supported. Please provide a source.");
+    }
+
+    /* Sort */
     const sort: Record<string, 1 | -1> = {
       [options.orderBy]: options.orderDirection === "ASC" ? 1 : -1,
     };
 
     const entries = await this.db
       .collection<Entry>(MongoDBDataStore.ENTRIES_COLLECTION)
-      .find({})
+      .find(filter)
       .sort(sort)
       .skip(options.page * options.pageSize)
       .limit(options.pageSize)

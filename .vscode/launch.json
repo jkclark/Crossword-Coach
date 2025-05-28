@@ -22,7 +22,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug storage index.ts",
+            "name": "Debug storage sandbox.ts",
             "runtimeExecutable": "npx",
             "runtimeArgs": [
                 "ts-node"

@@ -12,6 +12,8 @@ export interface DataStore {
 
 export interface GetEntriesOptions {
   /* Filter */
+  source?: string;
+  dayOfWeek?: number;
 
   /* Ordering */
   orderBy: string;
