@@ -1,33 +1,42 @@
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect, useRef } from "react";
-import { allEntriesAtom, isLoadingEntriesAtom } from "./state";
+import { allEntriesAtom, entryFilterOptionsAtom, isLoadingEntriesAtom } from "./state";
 
 import type { Entry } from "@crosswordcoach/common";
 import type { GetEntriesOptions } from "@crosswordcoach/storage";
 
 export function useEntries(currentEntryIndex: number) {
-  const [isLoadingEntries, setIsLoadingEntries] = useAtom(isLoadingEntriesAtom);
+  const entryFilterOptions = useAtomValue(entryFilterOptionsAtom);
+  const setIsLoadingEntries = useSetAtom(isLoadingEntriesAtom);
   const [allEntries, setAllEntries] = useAtom(allEntriesAtom);
 
   /* Track which pages have already been fetched */
   const fetchedPages = useRef<Set<number>>(new Set());
 
-  const fetchEntries = useCallback(
-    async (page: number) => {
-      /* If we've already fetched this page, skip it */
-      if (fetchedPages.current.has(page)) return; // Already fetched this page
-
-      /* Mark this page as having been fetched */
-      fetchedPages.current.add(page);
-
-      setIsLoadingEntries(true);
-
-      const API_URL = buildAPIURL({
+  const getGetEntriesOptions = useCallback(
+    (page: number): GetEntriesOptions => {
+      return {
+        ...entryFilterOptions, // Include any filter options
         orderBy: "_id",
         orderDirection: "ASC",
         pageSize: import.meta.env.VITE_ENTRIES_PAGE_SIZE,
         page: page,
-      });
+      };
+    },
+    [entryFilterOptions]
+  );
+
+  const fetchEntries = useCallback(
+    async (getEntriesOptions: GetEntriesOptions) => {
+      /* If we've already fetched this page, skip it */
+      if (fetchedPages.current.has(getEntriesOptions.page)) return; // Already fetched this page
+
+      /* Mark this page as having been fetched */
+      fetchedPages.current.add(getEntriesOptions.page);
+
+      setIsLoadingEntries(true);
+
+      const API_URL = buildAPIURL(getEntriesOptions);
 
       try {
         const res = await fetch(API_URL);
@@ -42,7 +51,7 @@ export function useEntries(currentEntryIndex: number) {
         console.error("Error fetching entries:", err);
 
         /* If we failed to fetch this page, remove it from the set */
-        fetchedPages.current.delete(page);
+        fetchedPages.current.delete(getEntriesOptions.page);
       } finally {
         setIsLoadingEntries(false);
       }
@@ -54,19 +63,27 @@ export function useEntries(currentEntryIndex: number) {
    * Get the full API URL for fetching entries.
    */
   function buildAPIURL(options: GetEntriesOptions): string {
-    const { orderBy, orderDirection, pageSize, page } = options;
+    const params = new URLSearchParams({
+      orderBy: options.orderBy,
+      orderDirection: options.orderDirection,
+      pageSize: options.pageSize.toString(),
+      page: options.page.toString(),
+    });
 
-    return `${import.meta.env.VITE_BASE_API_URL}/${
-      import.meta.env.VITE_ENTRIES_PATH
-    }?orderBy=${orderBy}&orderDirection=${orderDirection}&pageSize=${pageSize}&page=${page}`;
+    if (options.source) params.append("source", options.source);
+    if (options.dayOfWeek || options.dayOfWeek === 0) {
+      params.append("dayOfWeek", options.dayOfWeek.toString());
+    }
+
+    return `${import.meta.env.VITE_BASE_API_URL}/${import.meta.env.VITE_ENTRIES_PATH}?${params.toString()}`;
   }
 
   /* Initial fetch */
   useEffect(() => {
     if (allEntries.length === 0) {
-      fetchEntries(0);
+      fetchEntries(getGetEntriesOptions(0));
     }
-  }, [allEntries.length, fetchEntries]);
+  }, [allEntries.length, fetchEntries, getGetEntriesOptions]);
 
   /* Fetch next page if user is near the end of available entries */
   useEffect(() => {
@@ -75,9 +92,19 @@ export function useEntries(currentEntryIndex: number) {
       currentEntryIndex >= allEntries.length - import.meta.env.VITE_ENTRY_BUFFER_BEFORE_NEXT_LOAD
     ) {
       const nextPage = Math.floor(allEntries.length / import.meta.env.VITE_ENTRIES_PAGE_SIZE);
-      fetchEntries(nextPage);
+      fetchEntries(getGetEntriesOptions(nextPage));
     }
-  }, [currentEntryIndex, allEntries.length, fetchEntries]);
+  }, [currentEntryIndex, allEntries.length, fetchEntries, getGetEntriesOptions]);
+
+  /* Fetch entries when filter options change */
+  useEffect(() => {
+    if (entryFilterOptions) {
+      // Reset fetched pages when filter options change
+      fetchedPages.current.clear();
+      setAllEntries([]); // Clear existing entries
+      fetchEntries(getGetEntriesOptions(0)); // Fetch first page with new options
+    }
+  }, [entryFilterOptions, fetchEntries, setAllEntries, getGetEntriesOptions]);
 
   return allEntries;
 }
