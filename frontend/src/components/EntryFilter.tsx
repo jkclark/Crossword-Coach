@@ -1,5 +1,5 @@
 import { useSetAtom } from "jotai";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { entryFilterOptionsAtom } from "../state";
 
 const EntryFilter: React.FC = () => {
@@ -9,6 +9,9 @@ const EntryFilter: React.FC = () => {
 
   const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
+  // Required to let us reset the day-of-the-week form when the source is reset
+  const dayOfWeekFormRef = useRef<HTMLFormElement>(null);
+
   const openModal = () => {
     const modal = document.getElementById("my_modal_1") as HTMLDialogElement | null;
     if (modal) {
@@ -17,6 +20,13 @@ const EntryFilter: React.FC = () => {
   };
 
   const setSource = (newSource: string | null) => {
+    if (!newSource) {
+      setSelectedSource(null);
+      setSelectedDayOfWeek(null); // Reset day of week when source is cleared
+      dayOfWeekFormRef.current?.reset(); // Reset the day-of-the-week form to clear radio buttons
+      return;
+    }
+
     setSelectedSource(newSource);
   };
 
@@ -61,7 +71,7 @@ const EntryFilter: React.FC = () => {
           </form>
           <br />
           <h2 className="mb-2 bold text-lg">Day of the week</h2>
-          <form className="filter flex flex-row gap-y-1">
+          <form ref={dayOfWeekFormRef} className="filter flex flex-row gap-y-1">
             <input
               className="btn btn-square"
               type="reset"
