@@ -83,23 +83,36 @@ async function getMongoDBURI(): Promise<string> {
 }
 
 function parseGetEntriesOptions(params: { [key: string]: string | undefined }): GetEntriesOptions {
-  const { orderBy, orderDirection, pageSize, page } = params;
+  const { source, dayOfWeek, orderBy, orderDirection, pageSize, page } = params;
 
   console.log("Parsing GetEntriesOptions query params:", {
+    source,
+    dayOfWeek,
     orderBy,
     orderDirection,
     pageSize,
     page,
   });
 
+  /* Required parameters */
   if (!orderBy || !orderDirection || !pageSize || !page) {
     throw new Error("Missing required GetEntriesOptions query parameters");
   }
 
+  if (dayOfWeek && !source) {
+    throw new Error("dayOfWeek requires source to be specified");
+  }
+
+  if (dayOfWeek && isNaN(parseInt(dayOfWeek, 10))) {
+    throw new Error("Invalid dayOfWeek. Must be an integer");
+  }
+
+  /* Ordering */
   if (orderDirection !== "ASC" && orderDirection !== "DESC") {
     throw new Error("Invalid orderDirection. Must be 'ASC' or 'DESC'");
   }
 
+  /* Pagination */
   const pageSizeNum = parseInt(pageSize, 10);
   const pageNum = parseInt(page, 10);
 
@@ -108,8 +121,15 @@ function parseGetEntriesOptions(params: { [key: string]: string | undefined }): 
   }
 
   return {
+    /* Filter */
+    source: source || undefined,
+    dayOfWeek: dayOfWeek ? parseInt(dayOfWeek, 10) : undefined,
+
+    /* Ordering */
     orderBy,
     orderDirection,
+
+    /* Pagination */
     pageSize: pageSizeNum,
     page: pageNum,
   };
