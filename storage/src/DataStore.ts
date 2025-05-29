@@ -10,11 +10,13 @@ export interface DataStore {
   savePuzzle(puzzle: CrosswordPuzzle): Promise<void>;
 }
 
-export interface GetEntriesOptions {
-  /* Filter */
+export interface GetEntriesFilterOptions {
+  /* Filtering */
   source?: string;
   dayOfWeek?: number;
+}
 
+export interface GetEntriesOptions extends GetEntriesFilterOptions {
   /* Ordering */
   orderBy: string;
   orderDirection: string; // "ASC" or "DESC"
