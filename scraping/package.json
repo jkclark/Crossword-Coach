@@ -12,8 +12,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "cheerio": "^1.0.0",
-    "dotenv": "^16.5.0",
-    "puppeteer": "^24.9.0"
+    "dotenv": "^16.5.0"
+  },
+  "devDependencies": {
+    "@types/puppeteer": "^5.4.7"
   }
 }

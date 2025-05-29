@@ -4,7 +4,8 @@ import { CrosswordPuzzle } from "../../common/src/interfaces/CrosswordPuzzle";
 import { DataStore } from "../../storage/src/DataStore";
 import FileDataStore from "../../storage/src/data-stores/FileDataStore";
 
-import WSJSource from "../src/crossword-puzzle-sources/WSJSource";
+// import WSJSource from "../src/crossword-puzzle-sources/WSJSource";
+import NYTSource from "../src/crossword-puzzle-sources/NYTSource";
 import CrosswordPuzzleSource from "../src/crosswordPuzzleSource";
 
 dotenv.config({ path: "./.env" });
@@ -83,8 +84,8 @@ if (require.main === module) {
     throw new Error("..._COOKIE environment variable is not set");
   }
 
-  // const dataSource = new NYTSource(startDate, endDate, cookie);
-  const dataSource = new WSJSource(startDate, endDate, cookie);
+  const dataSource = new NYTSource(startDate, endDate, cookie);
+  // const dataSource = new WSJSource(startDate, endDate, cookie);
 
   /* Data store */
   const dummyDataStore = new FileDataStore("../temp/puzzles_filtered");
