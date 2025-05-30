@@ -36,8 +36,8 @@ const EntryFilter: React.FC = () => {
 
   const applyFilters = () => {
     setEntryFilterOptions({
-      source: selectedSource,
-      dayOfWeek: selectedDayOfWeek,
+      source: selectedSource !== null ? selectedSource : undefined,
+      dayOfWeek: selectedDayOfWeek !== null ? selectedDayOfWeek : undefined,
     });
   };
 

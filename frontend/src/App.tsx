@@ -9,7 +9,7 @@ import { useMinimumLoading } from "./useMinimumLoading";
 function App() {
   const currentEntryIndex = useAtomValue(currentEntryIndexAtom);
   const isLoadingEntries = useAtomValue(isLoadingEntriesAtom);
-  const allEntries = useEntries(currentEntryIndex);
+  const allEntries = useEntries();
 
   const isLoadingAtLeast1Second = useMinimumLoading(isLoadingEntries, 1000);
 
