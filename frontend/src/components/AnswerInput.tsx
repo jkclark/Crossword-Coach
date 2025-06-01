@@ -2,12 +2,13 @@ import { ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useSetAtom } from "jotai";
-import { currentEntryIndexAtom } from "../state";
+import { useAtom } from "jotai";
+import { currentEntryIndexAtom, currentEntryPageAtom, getNextEntryIndexAndPage, PAGE_SIZE } from "../state";
 import AnswerInputSquare from "./AnswerInputSquare";
 
 const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
-  const setCurrentEntryIndex = useSetAtom(currentEntryIndexAtom);
+  const [currentEntryIndex, setCurrentEntryIndex] = useAtom(currentEntryIndexAtom);
+  const [currentEntryPage, setCurrentEntryPage] = useAtom(currentEntryPageAtom);
   const [currentSquareIndex, setCurrentSquareIndex] = useState(0);
   const [userInput, setUserInput] = useState<string[]>(Array(answer.length).fill(""));
   const [revealedIndexes, setRevealedIndexes] = useState<number[]>([]);
@@ -161,8 +162,11 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     // here, because the user input and the current square index are reset in
     // the parent component when the entry (and thus this component's key) changes,
     // unmounting and remounting this component.
-    setCurrentEntryIndex((prev) => prev + 1);
-  }, [setCurrentEntryIndex]);
+    /* Update the current entry index and page */
+    const { nextIndex, nextPage } = getNextEntryIndexAndPage(currentEntryIndex, currentEntryPage, PAGE_SIZE);
+    setCurrentEntryIndex(nextIndex);
+    setCurrentEntryPage(nextPage);
+  }, [currentEntryIndex, currentEntryPage, setCurrentEntryIndex, setCurrentEntryPage]);
 
   /**
    * Check if the user input matches the answer.

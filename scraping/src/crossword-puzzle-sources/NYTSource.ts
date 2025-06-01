@@ -3,7 +3,7 @@ import CrosswordPuzzleSource from "../crosswordPuzzleSource";
 
 export default class NYTSource implements CrosswordPuzzleSource {
   BASE_PUZZLE_URL = "https://www.nytimes.com/svc/crosswords/v6/puzzle/daily/";
-  SOURCE_NAME = "NYT";
+  static SOURCE_NAME = "NYT";
 
   private startDate: Date;
   private endDate: Date;
@@ -49,13 +49,15 @@ export default class NYTSource implements CrosswordPuzzleSource {
 
     puzzle.id = this.getPuzzleIdFromURL(url);
     puzzle.date = this.getPuzzleDateFromURL(url);
-    puzzle.source = this.SOURCE_NAME;
+    puzzle.source = NYTSource.SOURCE_NAME;
     puzzle.entries = entries;
 
     return puzzle;
   }
 
   filterThemeClues(puzzle: CrosswordPuzzle): CrosswordPuzzle {
+    // TODO: Consider the `formatted` field
+    // TODO: Never filter out anything from Friday or Saturday, as they're themeless
     return puzzle;
   }
 
@@ -72,7 +74,7 @@ export default class NYTSource implements CrosswordPuzzleSource {
 
     const puzzleDateString = `${puzzleYear}-${puzzleMonth}-${puzzleDay}`;
 
-    return `${this.SOURCE_NAME}-${puzzleDateString}`;
+    return `${NYTSource.SOURCE_NAME}-${puzzleDateString}`;
   }
 
   private getPuzzleDateFromURL(url: string): Date {

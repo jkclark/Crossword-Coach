@@ -2,12 +2,13 @@ import { useAtomValue } from "jotai";
 
 import AnswerInput from "./components/AnswerInput";
 import Navbar from "./components/Navbar";
-import { currentEntryIndexAtom, isLoadingEntriesAtom } from "./state";
+import { currentEntryIndexAtom, currentEntryPageAtom, isLoadingEntriesAtom } from "./state";
 import { useEntries } from "./useEntries";
 import { useMinimumLoading } from "./useMinimumLoading";
 
 function App() {
   const currentEntryIndex = useAtomValue(currentEntryIndexAtom);
+  const currentEntryPage = useAtomValue(currentEntryPageAtom);
   const isLoadingEntries = useAtomValue(isLoadingEntriesAtom);
   const allEntries = useEntries();
 
@@ -22,12 +23,21 @@ function App() {
   );
 
   const entryDisplayDiv =
-    allEntries && currentEntryIndex >= 0 && currentEntryIndex < allEntries.length ? (
+    allEntries &&
+    currentEntryPage !== undefined &&
+    currentEntryPage >= 0 &&
+    Object.keys(allEntries).includes(currentEntryPage.toString()) &&
+    currentEntryIndex !== undefined &&
+    currentEntryIndex >= 0 &&
+    currentEntryIndex < allEntries[currentEntryPage].length ? (
       <div>
         <div className="w-full text-[clamp(1rem,5vw,2.5rem)] break-words mb-3">
-          {allEntries[currentEntryIndex].clue}
+          {allEntries[currentEntryPage][currentEntryIndex].clue}
         </div>
-        <AnswerInput key={currentEntryIndex} answer={allEntries[currentEntryIndex].answer} />
+        <AnswerInput
+          key={`${currentEntryPage}-${currentEntryIndex}`}
+          answer={allEntries[currentEntryPage][currentEntryIndex].answer}
+        />
       </div>
     ) : null;
 
@@ -37,7 +47,7 @@ function App() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <div className="container mx-auto text-center flex flex-col justify-center items-center flex-1">
-        {isLoadingAtLeast1Second ? loadingDiv : entryDisplayDiv || noEntriesLeftDiv}
+        {entryDisplayDiv ? entryDisplayDiv : isLoadingAtLeast1Second ? loadingDiv : noEntriesLeftDiv}
       </div>
     </div>
   );

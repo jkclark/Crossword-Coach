@@ -1,6 +1,14 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect, useRef } from "react";
-import { allEntriesAtom, currentEntryIndexAtom, entryFilterOptionsAtom, isLoadingEntriesAtom } from "./state";
+import {
+  allEntriesAtom,
+  currentEntryIndexAtom,
+  currentEntryPageAtom,
+  entryFilterOptionsAtom,
+  getNextEntryIndexAndPage,
+  isLoadingEntriesAtom,
+  PAGE_SIZE,
+} from "./state";
 
 import type { Entry } from "@crosswordcoach/common";
 import type { GetEntriesFilterOptions, GetEntriesOptions } from "@crosswordcoach/storage";
@@ -11,39 +19,17 @@ interface FilterOptionsEntryProgress {
 }
 
 const ENTRY_PROGRESS_KEY_PREFIX = "entryProgress:";
-const PAGE_SIZE = import.meta.env.VITE_ENTRIES_PAGE_SIZE;
 
 export function useEntries() {
   const entryFilterOptions = useAtomValue(entryFilterOptionsAtom);
   const setIsLoadingEntries = useSetAtom(isLoadingEntriesAtom);
   const [allEntries, setAllEntries] = useAtom(allEntriesAtom);
   const [currentEntryIndex, setCurrentEntryIndex] = useAtom(currentEntryIndexAtom);
-
-  function calculateNextEntryIndexAndPage(filterProgress: FilterOptionsEntryProgress | undefined): {
-    nextIndex: number;
-    nextPage: number;
-  } {
-    if (!filterProgress) {
-      return { nextIndex: 0, nextPage: 0 };
-    }
-
-    const lastEntryIndex = filterProgress.entryIndex;
-    const lastEntryPage = filterProgress.page;
-
-    // If the last seen entry index is at the end of the page, fetch the next page
-    if (lastEntryIndex >= PAGE_SIZE - 1) {
-      return { nextIndex: 0, nextPage: lastEntryPage + 1 };
-    } else {
-      // If the last seen entry index is not at the end of the page, continue from the current page
-      return { nextIndex: lastEntryIndex + 1, nextPage: lastEntryPage };
-    }
-  }
+  const [currentEntryPage, setCurrentEntryPage] = useAtom(currentEntryPageAtom);
 
   function getFilterOptionsKey(filterOptions: GetEntriesFilterOptions): string {
-    /* Remove keys with null or undefined values */
-    const cleaned = Object.fromEntries(
-      Object.entries(filterOptions).filter(([, v]) => v !== null && v !== undefined)
-    );
+    /* Remove keys with undefined values */
+    const cleaned = Object.fromEntries(Object.entries(filterOptions).filter(([, v]) => v !== undefined));
 
     return `${ENTRY_PROGRESS_KEY_PREFIX}${JSON.stringify(cleaned, Object.keys(cleaned).sort())}`;
   }
@@ -52,7 +38,6 @@ export function useEntries() {
     (entryFilterOptions: GetEntriesFilterOptions): FilterOptionsEntryProgress | undefined => {
       /* Get the key for the current filter options */
       const filterOptionsKey = getFilterOptionsKey(entryFilterOptions);
-      console.log("Retrieving entry progress for filter options key:", filterOptionsKey);
 
       /* Try to retrieve the entry progress from localStorage */
       console.log();
@@ -62,8 +47,6 @@ export function useEntries() {
       if (entryProgress) {
         console.log("Found entry progress in localStorage:", entryProgress);
         return JSON.parse(entryProgress) as FilterOptionsEntryProgress;
-      } else {
-        console.log("!!No entry progress found in localStorage for key:", filterOptionsKey);
       }
 
       /* If no entry progress found, return undefined */
@@ -161,68 +144,89 @@ export function useEntries() {
     return `${import.meta.env.VITE_BASE_API_URL}/${import.meta.env.VITE_ENTRIES_PATH}?${params.toString()}`;
   }
 
-  // TODO: Seemingly a lot of issues here. Seems to be devolving into spaghetti code.
-  // I think I need to rethink all of this and how it will work, and perhaps author
-  // it from scratch.
+  /* On mount, set index and page from localStorage */
+  useEffect(() => {
+    /* Get the entry progress for the current filter options */
+    const filterProgress = getFilterOptionsEntryProgress(entryFilterOptions);
+    if (!filterProgress) {
+      // If no progress found, start from the beginning //
+      setCurrentEntryIndex(0);
+      setCurrentEntryPage(0);
+      return;
+    }
+    /* If progress found, set the current index and page */
+    setCurrentEntryIndex(filterProgress.entryIndex);
+    setCurrentEntryPage(filterProgress.page);
+  }, [entryFilterOptions, getFilterOptionsEntryProgress, setCurrentEntryIndex, setCurrentEntryPage]);
 
   /* Fetch next page if user is near the end of available entries */
   useEffect(() => {
+    if (currentEntryIndex === undefined || currentEntryPage === undefined) return;
+
     if (
-      allEntries.length > 0 &&
-      currentEntryIndex >= allEntries.length - import.meta.env.VITE_ENTRY_BUFFER_BEFORE_NEXT_LOAD
+      allEntries[currentEntryPage] &&
+      currentEntryIndex >=
+        allEntries[currentEntryPage].length - import.meta.env.VITE_ENTRY_BUFFER_BEFORE_NEXT_LOAD &&
+      allEntries[currentEntryPage + 1] === undefined // Only fetch next page if it doesn't already exist
     ) {
-      console.log("Need to get more entries");
-    }
-  }, [currentEntryIndex, allEntries.length, fetchEntriesWhileLoading, getGetEntriesOptions]);
+      // Get the next page number based on the current entry index
+      const nextPage = currentEntryPage + 1;
 
-  /* When current index changes, update localStorage progress */
+      (async () => {
+        // Fetch entries for the next page
+        const newEntries = await fetchEntriesWhileLoading(getGetEntriesOptions(nextPage));
+
+        // Add the new entries to the existing ones
+        setAllEntries((prevEntries) => {
+          return { ...prevEntries, [nextPage]: newEntries };
+        });
+      })();
+    }
+  }, [
+    currentEntryIndex,
+    currentEntryPage,
+    allEntries,
+    setAllEntries,
+    fetchEntriesWhileLoading,
+    getGetEntriesOptions,
+  ]);
+
+  /* When current index or current page changes, update localStorage progress */
+  const entryFilterOptionsRef = useRef(entryFilterOptions);
   useEffect(() => {
-    console.log("Current entry index changed:", currentEntryIndex);
-    if (entryFilterOptions && currentEntryIndex !== undefined) {
-      const currentProgress = getFilterOptionsEntryProgress(entryFilterOptions);
-      console.log("Current progress:", currentProgress);
-      setFilterOptionsEntryProgress(
-        entryFilterOptions,
-        currentEntryIndex % PAGE_SIZE,
-        Math.floor(currentEntryIndex / PAGE_SIZE) + (currentProgress?.page || 0)
-      );
-    }
-  }, [entryFilterOptions, currentEntryIndex, getFilterOptionsEntryProgress, setFilterOptionsEntryProgress]);
+    if (currentEntryIndex === undefined || currentEntryPage === undefined) return;
 
-  /**
-   * Without skipping the initial mount, the effect runs on the first render,
-   * causing us to skip the first entry. Also, note that in React Strict Mode,
-   * the effect runs twice on initial mount, so we see a skipping of the first
-   * entry anyway. In production, we do not see this behavior.
-   */
-  const didMountRef = useRef(false);
+    if (entryFilterOptionsRef.current && currentEntryIndex !== undefined && currentEntryPage !== undefined) {
+      setFilterOptionsEntryProgress(entryFilterOptionsRef.current, currentEntryIndex, currentEntryPage);
+    }
+  }, [currentEntryIndex, currentEntryPage, getFilterOptionsEntryProgress, setFilterOptionsEntryProgress]);
 
   /* Fetch entries when filter options change */
   useEffect(() => {
-    // See note above
-    if (!didMountRef.current) {
-      didMountRef.current = true;
-      return; // Skip initial mount
-    }
-
-    console.log("Fetching entries for new filter options:", entryFilterOptions);
-
-    /* Clear existing entries */
-    setAllEntries([]);
+    /* Set the current filter options in the ref */
+    entryFilterOptionsRef.current = entryFilterOptions;
 
     /* Calculate the next entry index and page based on the current filter options/progress */
     const filterProgress = getFilterOptionsEntryProgress(entryFilterOptions);
-    const { nextIndex, nextPage } = calculateNextEntryIndexAndPage(filterProgress);
-    console.log("Next entry index:", nextIndex, "Next page:", nextPage);
+
+    const { nextIndex, nextPage } = getNextEntryIndexAndPage(
+      filterProgress?.entryIndex,
+      filterProgress?.page,
+      PAGE_SIZE
+    );
 
     /* Fetch entries based on the calculated start index and page */
     (async () => {
-      setAllEntries(await fetchEntriesWhileLoading(getGetEntriesOptions(nextPage)));
+      setAllEntries({ [nextPage]: await fetchEntriesWhileLoading(getGetEntriesOptions(nextPage)) });
     })();
 
-    /* Set the current entry index to the calculated start index */
-    console.log("Setting current entry index to:", nextIndex);
-    setCurrentEntryIndex(nextIndex);
+    /* Set the current entry index and page to the calculated start index */
+    if (nextIndex === 0) {
+      setCurrentEntryIndex(nextIndex);
+      setCurrentEntryPage(nextPage);
+    } else {
+      setCurrentEntryIndex(nextIndex);
+    }
   }, [
     entryFilterOptions,
     fetchEntriesWhileLoading,
@@ -230,6 +234,7 @@ export function useEntries() {
     getGetEntriesOptions,
     getFilterOptionsEntryProgress,
     setCurrentEntryIndex,
+    setCurrentEntryPage,
   ]);
 
   return allEntries;
