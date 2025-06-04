@@ -1,4 +1,4 @@
-import { CrosswordPuzzle, Entry, getEmptyPuzzle } from "common/src/interfaces/CrosswordPuzzle";
+import { CrosswordPuzzle, Entry, getEmptyPuzzle } from "@crosswordcoach/common";
 import CrosswordPuzzleSource from "../crosswordPuzzleSource";
 
 export default class NYTSource implements CrosswordPuzzleSource {
