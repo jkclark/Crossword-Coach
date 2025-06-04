@@ -4,13 +4,16 @@ import { CrosswordPuzzle } from "../../common/src/interfaces/CrosswordPuzzle";
 import { DataStore } from "../../storage/src/DataStore";
 import FileDataStore from "../../storage/src/data-stores/FileDataStore";
 
-// import WSJSource from "../src/crossword-puzzle-sources/WSJSource";
-import NYTSource from "../src/crossword-puzzle-sources/NYTSource";
-import CrosswordPuzzleSource from "../src/crosswordPuzzleSource";
+import WSJSource from "../src/crossword-puzzle-sources/WSJSource";
+// import NYTSource from "../src/crossword-puzzle-sources/NYTSource";
+import CrosswordPuzzleSource, {
+  CrosswordPuzzleSourceOnTheFly,
+  CrosswordPuzzleSourcePreFetchURLs,
+} from "../src/crosswordPuzzleSource";
 
 dotenv.config({ path: "./.env" });
 
-async function main(cwpSource: CrosswordPuzzleSource, dataStore: DataStore) {
+async function mainPreFetchURLs(cwpSource: CrosswordPuzzleSourcePreFetchURLs, dataStore: DataStore) {
   console.log("Scraping started");
 
   /* Get all puzzle URLs */
@@ -23,16 +26,33 @@ async function main(cwpSource: CrosswordPuzzleSource, dataStore: DataStore) {
       console.log(`Scraping puzzle from URL: ${url}`);
       const puzzle = await cwpSource.getPuzzle(url);
 
-      // Filter theme clues
-      const puzzleNoThemeClues = cwpSource.filterThemeClues(puzzle);
-
-      // Filter clues that reference other clues
-      const puzzleNoCluesReferencingOtherClues = filterCluesThatReferenceOtherClues(puzzleNoThemeClues);
-
-      // Store the puzzle
-      await dataStore.savePuzzle(puzzleNoCluesReferencingOtherClues);
+      filterAndStorePuzzle(cwpSource, dataStore, puzzle);
     })
   );
+}
+
+async function mainOnTheFly(cwpSource: CrosswordPuzzleSourceOnTheFly, dataStore: DataStore) {
+  for await (const puzzle of cwpSource.getAllPuzzles()) {
+    console.log(`Scraping puzzle with ID: ${puzzle.id} from source: ${puzzle.source}`);
+
+    // Filter and store the puzzle
+    await filterAndStorePuzzle(cwpSource, dataStore, puzzle);
+  }
+}
+
+async function filterAndStorePuzzle(
+  cwpSource: CrosswordPuzzleSource,
+  dataStore: DataStore,
+  puzzle: CrosswordPuzzle
+) {
+  // Filter theme clues
+  const puzzleNoThemeClues = cwpSource.filterThemeClues(puzzle);
+
+  // Filter clues that reference other clues
+  const puzzleNoCluesReferencingOtherClues = filterCluesThatReferenceOtherClues(puzzleNoThemeClues);
+
+  // Store the puzzle
+  await dataStore.savePuzzle(puzzleNoCluesReferencingOtherClues);
 }
 
 /**
@@ -84,11 +104,12 @@ if (require.main === module) {
     throw new Error("..._COOKIE environment variable is not set");
   }
 
-  const dataSource = new NYTSource(startDate, endDate, cookie);
-  // const dataSource = new WSJSource(startDate, endDate, cookie);
+  // const dataSource = new NYTSource(startDate, endDate, cookie);
+  const dataSource = new WSJSource(startDate, endDate, cookie);
 
   /* Data store */
   const dummyDataStore = new FileDataStore("../temp/puzzles_filtered");
 
-  main(dataSource, dummyDataStore);
+  // mainPreFetchURLs(dataSource, dummyDataStore);
+  mainOnTheFly(dataSource, dummyDataStore);
 }

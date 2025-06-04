@@ -1,11 +1,12 @@
 // import * as cheerio from "cheerio";
 
-import { CrosswordPuzzle, getEmptyPuzzle } from "@crosswordcoach/common";
+import { CrosswordPuzzle, Entry, getEmptyPuzzle } from "@crosswordcoach/common";
 // import puppeteer from "puppeteer";
 import CrosswordPuzzleSource from "../crosswordPuzzleSource";
 
 export default class WSJSource implements CrosswordPuzzleSource {
   BASE_PUZZLES_PAGE_URL = "https://www.wsj.com/news/types/crossword";
+  static SOURCE_NAME = "WSJ";
 
   private startDate: Date;
   private endDate: Date;
@@ -21,40 +22,36 @@ export default class WSJSource implements CrosswordPuzzleSource {
     this.cookie = cookie;
   }
 
-  /**
-   * Get all WSJ crossword puzzle URLs between the start and end dates.
-   *
-   * Because the WSJ uses these unpredictable IDs in the URL (see example
-   * below), we have to fetch the page that lists the puzzles and extract the
-   * URLs from there. The URLS listed there then return an HTML page that contains
-   * the URL for the actual puzzle data.
-   *
-   * We paginate over all puzzles from the main puzzles page until we have spanned the
-   * start -> end date range.
-   *
-   * Puzzle list page -> puzzle page -> puzzle data URL
-   *
-   * Example URLs:
-   *  - https://www.wsj.com/puzzles/crossword/20250514/66925/data.json -- May 14
-   *  - https://www.wsj.com/puzzles/crossword/20250520/67321/data.json -- May 20
-   *  - https://www.wsj.com/puzzles/crossword/20250521/67322/data.json -- May 21
-   *  - https://www.wsj.com/puzzles/crossword/20250522/67325/data.json -- May 22
-   *  - https://www.wsj.com/puzzles/crossword/20250524/67326/data.json -- May 24
-   *
-   * @returns A list of URLs for the WSJ crossword puzzles between the start and end dates.
-   */
+  async *getAllPuzzles(): AsyncGenerator<CrosswordPuzzle> {
+    // TODO: Get date, puzzle ID, source
+    // TODO: Get entries from WSJ puzzle data
+    // TODO: Put crossword puzzle object together from above
+    // TODO: If date is a Sunday (or Friday...?), skip this date
+    // TODO: If puzzle ID yields 404 or other error, increase ID
+    const url = "https://www.wsj.com/puzzles/crossword/20250603/67854/data.json";
+    yield await this.getPuzzle(url);
+  }
+
   async getAllPuzzleURLs(): Promise<string[]> {
-    /* Get the URL for each puzzle page */
-    const puzzlePageURLs = await this.getPuzzlePageURLsFromPuzzlesListPageURL(this.BASE_PUZZLES_PAGE_URL);
-
-    /* Get the URL for each puzzle's data from the puzzle-page HTML */
-    const puzzleDataURLs = await this.getPuzzleDataURLsFromPuzzlePageURLs(puzzlePageURLs);
-
-    return puzzleDataURLs;
+    return [];
   }
 
   async getPuzzle(url: string): Promise<CrosswordPuzzle> {
     const puzzle: CrosswordPuzzle = getEmptyPuzzle();
+
+    let puzzleData: Entry[];
+    try {
+      puzzleData = await this.getWSJPuzzleEntries(url);
+    } catch (error) {
+      console.error(`Error fetching WSJ puzzle data from ${url}:`, error);
+      throw new Error(`Failed to fetch WSJ puzzle data from ${url}`);
+    }
+
+    puzzle.id = this.getPuzzleIdFromURL(url);
+    puzzle.date = this.getPuzzleDateFromURL(url);
+    puzzle.source = WSJSource.SOURCE_NAME;
+    puzzle.entries = puzzleData;
+
     return puzzle;
   }
 
@@ -62,76 +59,60 @@ export default class WSJSource implements CrosswordPuzzleSource {
     return puzzle;
   }
 
-  /**
-   * Get the URLs for each puzzle page.
-   *
-   * We then need to fetch the puzzle page to be able to construct the actual
-   * puzzle-data URL.
-   *
-   * Puzzle list page -> puzzle page -> puzzle data URL
-   */
-  async getPuzzlePageURLsFromPuzzlesListPageURL(puzzlesListPageURL: string): Promise<string[]> {
-    const puzzlesListPageHTML = await this.getHTMLFromWSJ(puzzlesListPageURL);
-    return this.getPuzzlePageURLsFromPuzzlesListPageHTML(puzzlesListPageHTML);
+  private getPuzzleIdFromURL(url: string): string {
+    const puzzleDate = this.getPuzzleDateFromURL(url);
+
+    const puzzleYear = puzzleDate.getUTCFullYear();
+    const puzzleMonth = String(puzzleDate.getUTCMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+    const puzzleDay = String(puzzleDate.getUTCDate()).padStart(2, "0");
+
+    const puzzleDateString = `${puzzleYear}${puzzleMonth}${puzzleDay}`;
+
+    return `${WSJSource.SOURCE_NAME}-${puzzleDateString}`;
   }
 
-  getPuzzlePageURLsFromPuzzlesListPageHTML(html: string): string[] {
-    const puzzlePageURLs: string[] = [];
-    // const $ = cheerio.load(html);
-    // const puzzleListItems = $("html body #root ");
-    return puzzlePageURLs;
+  private getPuzzleDateFromURL(url: string): Date {
+    const dateMatch = url.match(/(\d{4}\d{2}\d{2})/);
+
+    const year = dateMatch ? dateMatch[1].slice(0, 4) : "";
+    const month = dateMatch ? dateMatch[1].slice(4, 6) : "";
+    const day = dateMatch ? dateMatch[1].slice(6, 8) : "";
+
+    if (year && month && day) {
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    }
+
+    throw new Error(`Unable to determine date from URL: ${url}`);
   }
 
-  async getPuzzleDataURLsFromPuzzlePageURLs(puzzlePageURLs: string[]): Promise<string[]> {
-    const puzzleDataURLs: string[] = [];
+  private async getWSJPuzzleEntries(url: string): Promise<Entry[]> {
+    const response = await fetch(url, { headers: { cookie: this.cookie } });
 
-    await Promise.all(
-      puzzlePageURLs.map(async (puzzlePageURL) => {
-        /* Get the puzzle-data URL from the puzzle page */
-        const puzzleDataURL = await this.getPuzzleDataURLFromPuzzlePageURL(puzzlePageURL);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch WSJ puzzle data from ${url}`);
+    }
 
-        /* Add the puzzle-data URL to the list if it exists */
-        if (puzzleDataURL) {
-          puzzleDataURLs.push(puzzleDataURL);
-        }
-      })
-    );
+    const data = await response.json();
 
-    return puzzleDataURLs;
-  }
+    const entries: Entry[] = [];
 
-  /**
-   * Get the puzzle-data URL given the puzzle-page URL.
-   */
-  async getPuzzleDataURLFromPuzzlePageURL(puzzlePageURL: string): Promise<string> {
-    const puzzlePageHTML = await this.getHTMLFromWSJ(puzzlePageURL);
-    return this.getPuzzleDataURLFromPuzzlePageHTML(puzzlePageHTML);
-  }
+    for (const acrossEntry of data.copy.clues[0].clues) {
+      const entry: Entry = {
+        clue: acrossEntry.clue,
+        answer: acrossEntry.answer,
+      };
+      console.log(`Adding entry: ${entry.clue} = ${entry.answer}`);
+      entries.push(entry);
+    }
 
-  /**
-   * Get the puzzle-data URL given the puzzle-page HTML.
-   */
-  async getPuzzleDataURLFromPuzzlePageHTML(html: string): Promise<string> {
-    return "";
-  }
+    for (const downEntry of data.copy.clues[1].clues) {
+      const entry: Entry = {
+        clue: downEntry.clue,
+        answer: downEntry.answer,
+      };
+      entries.push(entry);
+    }
 
-  async getHTMLFromWSJ(url: string): Promise<string> {
-    return "";
-    // const browser = await puppeteer.launch({ headless: true });
-    // const page = await browser.newPage();
-
-    // await page.setExtraHTTPHeaders({ Cookie: this.cookie });
-
-    // await page.setUserAgent(
-    //   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-    // );
-
-    // await page.goto(url, {
-    //   waitUntil: "networkidle2",
-    // });
-    // const html = await page.content();
-
-    // await browser.close();
-    // return html;
+    return entries;
   }
 }
