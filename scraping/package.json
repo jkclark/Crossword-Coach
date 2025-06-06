@@ -1,8 +1,8 @@
 {
   "name": "@crosswordcoach/scraping",
   "version": "1.0.0",
-  "main": "./dist/index2.js",
-  "types": "./dist/index2.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "scrape": "npx ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"

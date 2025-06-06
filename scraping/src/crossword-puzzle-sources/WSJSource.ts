@@ -8,7 +8,8 @@ import CrosswordPuzzleSource, { CrosswordPuzzleSourceOnTheFly } from "../crosswo
 
 export default class WSJSource implements CrosswordPuzzleSource, CrosswordPuzzleSourceOnTheFly {
   BASE_PUZZLE_URL = "https://www.wsj.com/puzzles/crossword/";
-  static SOURCE_NAME = "WSJ";
+  static SOURCE_NAME = "Wall Street Journal";
+  static SOURCE_NAME_SHORT = "WSJ";
 
   private datesAndIds: PuzzleDateAndId[];
   private cookie: string; // Required for WSJ request
@@ -42,7 +43,7 @@ export default class WSJSource implements CrosswordPuzzleSource, CrosswordPuzzle
 
     puzzle.id = this.getPuzzleIdFromURL(url);
     puzzle.date = this.getPuzzleDateFromURL(url);
-    puzzle.source = WSJSource.SOURCE_NAME;
+    puzzle.source = WSJSource.SOURCE_NAME_SHORT;
     puzzle.entries = puzzleData;
 
     return puzzle;
@@ -155,7 +156,7 @@ export default class WSJSource implements CrosswordPuzzleSource, CrosswordPuzzle
 
     const puzzleDateString = `${puzzleYear}-${puzzleMonth}-${puzzleDay}`;
 
-    return `${WSJSource.SOURCE_NAME}-${puzzleDateString}`;
+    return `${WSJSource.SOURCE_NAME_SHORT}-${puzzleDateString}`;
   }
 
   private getPuzzleDateFromURL(url: string): Date {

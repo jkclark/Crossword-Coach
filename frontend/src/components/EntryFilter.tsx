@@ -7,6 +7,19 @@ const EntryFilter: React.FC = () => {
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<number | null>(null);
 
+  // NOTE: TS is being annoying with allowing me to import a runtime value from
+  // the scraping package. So I'm just duplicating it here.
+  const SOURCES = [
+    {
+      name: "New York Times",
+      shortName: "NYT",
+    },
+    {
+      name: "Wall Street Journal",
+      shortName: "WSJ",
+    },
+  ];
+
   const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
   // Required to let us reset the day-of-the-week form when the source is reset
@@ -52,22 +65,16 @@ const EntryFilter: React.FC = () => {
           <h2 className="mb-2 text-lg">Publication</h2>
           <form className="filter flex flex-row gap-y-1">
             <input className="btn btn-square" type="reset" value="×" onClick={() => setSource(null)} />
-            <input
-              className={`btn ${selectedSource === "NYT" ? "btn-primary" : ""}`}
-              type="radio"
-              name="sources"
-              aria-label="New York Times"
-              onClick={() => setSource("NYT")}
-            />
-            <input
-              className="btn"
-              type="radio"
-              name="sources"
-              aria-label="Wall Street Journal"
-              onClick={() => {
-                setSource("WSJ");
-              }}
-            />
+            {SOURCES.map((source, index) => (
+              <input
+                key={index}
+                className={`btn ${selectedSource === source.shortName ? "btn-primary" : ""}`}
+                type="radio"
+                name="sources"
+                aria-label={source.name}
+                onClick={() => setSource(source.shortName)}
+              />
+            ))}
           </form>
           <br />
           <h2 className="mb-2 bold text-lg">Day of the week</h2>

@@ -102,7 +102,7 @@ if (require.main === module) {
 
   // const dataSource = new NYTSource(startDate, endDate, cookie);
 
-  // const puzzleDirectory = NYTSource.SOURCE_NAME;
+  // const puzzleDirectory = NYTSource.SOURCE_NAME_SHORT;
 
   /* WSJ */
   // Load from WSJDatesAndIds.json
@@ -115,7 +115,7 @@ if (require.main === module) {
 
   const cookie = process.env.WSJ_COOKIE;
 
-  const puzzleDirectory = WSJSource.SOURCE_NAME;
+  const puzzleDirectory = WSJSource.SOURCE_NAME_SHORT;
 
   if (!cookie) {
     throw new Error("..._COOKIE environment variable is not set");

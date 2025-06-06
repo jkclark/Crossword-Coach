@@ -19,9 +19,9 @@ async function main() {
   const dataStore = new MongoDBDataStore(uri);
 
   await dataStore.connect();
-  await doGet(dataStore);
+  // await doGet(dataStore);
 
-  // await doSave(dataStore);
+  await doSave(dataStore);
 
   await dataStore.close();
 }
@@ -48,7 +48,7 @@ async function doSave(dataStore: DataStore) {
   // read all puzzles from folder into array of puzzle objects
   const fs = require("fs");
   const path = require("path");
-  const puzzlesFolderPath = path.join(__dirname, "../../temp/puzzles_filtered");
+  const puzzlesFolderPath = path.join(__dirname, "../../temp/WSJ");
   const puzzleFiles = fs.readdirSync(puzzlesFolderPath);
   const puzzles: CrosswordPuzzle[] = puzzleFiles.map((fileName: string) => {
     const filePath = path.join(puzzlesFolderPath, fileName);

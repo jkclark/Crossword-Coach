@@ -3,7 +3,8 @@ import CrosswordPuzzleSource, { CrosswordPuzzleSourcePreFetchURLs } from "../cro
 
 export default class NYTSource implements CrosswordPuzzleSource, CrosswordPuzzleSourcePreFetchURLs {
   BASE_PUZZLE_URL = "https://www.nytimes.com/svc/crosswords/v6/puzzle/daily/";
-  static SOURCE_NAME = "NYT";
+  static SOURCE_NAME = "New York Times";
+  static SOURCE_NAME_SHORT = "NYT";
 
   private startDate: Date;
   private endDate: Date;
@@ -49,7 +50,7 @@ export default class NYTSource implements CrosswordPuzzleSource, CrosswordPuzzle
 
     puzzle.id = this.getPuzzleIdFromURL(url);
     puzzle.date = this.getPuzzleDateFromURL(url);
-    puzzle.source = NYTSource.SOURCE_NAME;
+    puzzle.source = NYTSource.SOURCE_NAME_SHORT;
     puzzle.entries = entries;
 
     return puzzle;
@@ -74,7 +75,7 @@ export default class NYTSource implements CrosswordPuzzleSource, CrosswordPuzzle
 
     const puzzleDateString = `${puzzleYear}-${puzzleMonth}-${puzzleDay}`;
 
-    return `${NYTSource.SOURCE_NAME}-${puzzleDateString}`;
+    return `${NYTSource.SOURCE_NAME_SHORT}-${puzzleDateString}`;
   }
 
   private getPuzzleDateFromURL(url: string): Date {
