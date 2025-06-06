@@ -95,8 +95,9 @@ function clueReferencesOtherClue(clue: string): boolean {
 
 if (require.main === module) {
   /* Puzzle source */
-  const startDate = new Date("2023-01-01T00:00:00Z");
-  const endDate = new Date("2023-01-01T00:00:00Z");
+  const startDate = new Date("2025-05-19T00:00:00Z");
+  const startId = 67323;
+  const endDate = new Date("2025-06-01T00:00:00Z");
   // const cookie = process.env.NYT_COOKIE;
   const cookie = process.env.WSJ_COOKIE;
 
@@ -105,10 +106,10 @@ if (require.main === module) {
   }
 
   // const dataSource = new NYTSource(startDate, endDate, cookie);
-  const dataSource = new WSJSource(startDate, endDate, cookie);
+  const dataSource = new WSJSource(startDate, startId, endDate, cookie);
 
   /* Data store */
-  const dummyDataStore = new FileDataStore("../temp/puzzles_filtered");
+  const dummyDataStore = new FileDataStore(`../temp/${WSJSource.SOURCE_NAME}`);
 
   // mainPreFetchURLs(dataSource, dummyDataStore);
   mainOnTheFly(dataSource, dummyDataStore);

@@ -1,19 +1,23 @@
-// import * as cheerio from "cheerio";
-
+/**
+ * I have a sheet called "WSJ IDs" in my Scratchpad Google Sheet
+ * that lays out 2 months of WSJ puzzle IDs:
+ * https://docs.google.com/spreadsheets/d/1ELaP9_MewlN594xXJmlrpk5iN2wmjOn-MU7giEQpxoM/edit?gid=260395729#gid=260395729
+ */
 import { CrosswordPuzzle, Entry, getEmptyPuzzle } from "@crosswordcoach/common";
-// import puppeteer from "puppeteer";
-import CrosswordPuzzleSource from "../crosswordPuzzleSource";
+import CrosswordPuzzleSource, { CrosswordPuzzleSourceOnTheFly } from "../crosswordPuzzleSource";
 
-export default class WSJSource implements CrosswordPuzzleSource {
-  BASE_PUZZLES_PAGE_URL = "https://www.wsj.com/news/types/crossword";
+export default class WSJSource implements CrosswordPuzzleSource, CrosswordPuzzleSourceOnTheFly {
+  BASE_PUZZLE_URL = "https://www.wsj.com/puzzles/crossword/";
   static SOURCE_NAME = "WSJ";
 
   private startDate: Date;
+  private startId: number;
   private endDate: Date;
   private cookie: string; // Required for WSJ request
 
-  constructor(startDate: Date, endDate: Date, cookie: string) {
+  constructor(startDate: Date, startId: number, endDate: Date, cookie: string) {
     this.startDate = startDate;
+    this.startId = startId;
     this.endDate = endDate;
 
     if (!cookie) {
@@ -23,17 +27,9 @@ export default class WSJSource implements CrosswordPuzzleSource {
   }
 
   async *getAllPuzzles(): AsyncGenerator<CrosswordPuzzle> {
-    // TODO: Get date, puzzle ID, source
-    // TODO: Get entries from WSJ puzzle data
-    // TODO: Put crossword puzzle object together from above
-    // TODO: If date is a Sunday (or Friday...?), skip this date
-    // TODO: If puzzle ID yields 404 or other error, increase ID
-    const url = "https://www.wsj.com/puzzles/crossword/20250603/67854/data.json";
-    yield await this.getPuzzle(url);
-  }
-
-  async getAllPuzzleURLs(): Promise<string[]> {
-    return [];
+    for await (const puzzle of this.getWeekOfPuzzles(this.startDate, this.startId)) {
+      yield puzzle;
+    }
   }
 
   async getPuzzle(url: string): Promise<CrosswordPuzzle> {
@@ -43,7 +39,6 @@ export default class WSJSource implements CrosswordPuzzleSource {
     try {
       puzzleData = await this.getWSJPuzzleEntries(url);
     } catch (error) {
-      console.error(`Error fetching WSJ puzzle data from ${url}:`, error);
       throw new Error(`Failed to fetch WSJ puzzle data from ${url}`);
     }
 
@@ -59,6 +54,100 @@ export default class WSJSource implements CrosswordPuzzleSource {
     return puzzle;
   }
 
+  private getPuzzleURLFromDateAndId(date: Date, id: number): string {
+    return `${this.BASE_PUZZLE_URL}${date.toISOString().slice(0, 10).replace(/-/g, "")}/${id}/data.json`;
+  }
+
+  private async *getWeekOfPuzzles(startDate: Date, startId: number): AsyncGenerator<CrosswordPuzzle> {
+    const WEEK_ID_RANGE = 5;
+    const DAYS_OF_WEEK_NO_PUZZLE = [5, 7]; // There are no puzzles on Fridays and Sundays
+    const currentDate = new Date(startDate);
+
+    /* Get the starting puzzle (which should guaranteed exist) */
+    const puzzleURL = this.getPuzzleURLFromDateAndId(currentDate, startId);
+    yield await this.getPuzzle(puzzleURL);
+
+    /* Track the used IDs to avoid guessing the same ID twice */
+    const usedIds = new Set<number>();
+    usedIds.add(startId);
+
+    /* Increment the date to the next day */
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+
+    /* For the remaining puzzles (until the next Sunday), guess the IDs */
+    while (currentDate.getUTCDay() !== 0) {
+      // Skip Fridays and Sundays
+      if (DAYS_OF_WEEK_NO_PUZZLE.includes(currentDate.getUTCDay())) {
+        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+        continue;
+      }
+
+      console.log(`SEARCHing day of week: ${currentDate.getUTCDay()} (${currentDate.toISOString()})`);
+
+      try {
+        // Guess the ID
+        const { wsjId, puzzle } = await this.getPuzzleByGuessing(
+          currentDate,
+          startId,
+          usedIds,
+          WEEK_ID_RANGE
+        );
+
+        // Yield the puzzle
+        yield puzzle;
+
+        // Mark the ID as used
+        usedIds.add(wsjId);
+      } catch (error) {
+        console.error(`ERROR: Could not find ID for puzzle with date ${currentDate.toISOString()}`);
+      } finally {
+        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+      }
+    }
+  }
+
+  /**
+   * Find a puzzle with a given date by guessing its WSJ ID.
+   *
+   * We search for the puzzle by guessing IDs within a certain range of a starting ID,
+   * ignoring the starting ID. For example, with range = 5 and startId of 100, we would guess
+   * IDs 95 - 105, excluding 100. If any of those IDs return a valid puzzle for the given date,
+   * we return that puzzle.
+   *
+   * @param date the date of the puzzle to fetch
+   * @param middleId the ID to guess around
+   * @param usedIds IDs to ignore (because they've already been used)
+   * @param range the maximum distance from startId to guess
+   * @returns a puzzle with its WSJ ID
+   */
+  private async getPuzzleByGuessing(
+    date: Date,
+    middleId: number,
+    usedIds: Set<number>,
+    range: number
+  ): Promise<PuzzleWithWSJId> {
+    /* Build all candidate IDs */
+    const guessIds: number[] = [];
+    for (let offset = 1; offset <= range; offset++) {
+      if (!usedIds.has(middleId + offset)) guessIds.push(middleId + offset);
+      if (!usedIds.has(middleId - offset)) guessIds.push(middleId - offset);
+    }
+
+    /* Map each guess to a promise */
+    const guessPromises = guessIds.map(async (guessId) => {
+      const puzzleURL = this.getPuzzleURLFromDateAndId(date, guessId);
+      const puzzle = await this.getPuzzle(puzzleURL);
+      return { wsjId: guessId, puzzle };
+    });
+
+    try {
+      // Promise.any resolves with the first fulfilled promise
+      return await Promise.any(guessPromises);
+    } catch {
+      throw new Error(`Could not find puzzle with date ${date.toISOString()} by guessing IDs`);
+    }
+  }
+
   private getPuzzleIdFromURL(url: string): string {
     const puzzleDate = this.getPuzzleDateFromURL(url);
 
@@ -66,7 +155,7 @@ export default class WSJSource implements CrosswordPuzzleSource {
     const puzzleMonth = String(puzzleDate.getUTCMonth() + 1).padStart(2, "0"); // Months are 0-indexed
     const puzzleDay = String(puzzleDate.getUTCDate()).padStart(2, "0");
 
-    const puzzleDateString = `${puzzleYear}${puzzleMonth}${puzzleDay}`;
+    const puzzleDateString = `${puzzleYear}-${puzzleMonth}-${puzzleDay}`;
 
     return `${WSJSource.SOURCE_NAME}-${puzzleDateString}`;
   }
@@ -92,20 +181,22 @@ export default class WSJSource implements CrosswordPuzzleSource {
       throw new Error(`Failed to fetch WSJ puzzle data from ${url}`);
     }
 
-    const data = await response.json();
+    const responseJson = await response.json();
 
     const entries: Entry[] = [];
+    const clues = responseJson.data.copy.clues;
+    const acrossClues = clues[0].clues;
+    const downClues = clues[1].clues;
 
-    for (const acrossEntry of data.copy.clues[0].clues) {
+    for (const acrossEntry of acrossClues) {
       const entry: Entry = {
         clue: acrossEntry.clue,
         answer: acrossEntry.answer,
       };
-      console.log(`Adding entry: ${entry.clue} = ${entry.answer}`);
       entries.push(entry);
     }
 
-    for (const downEntry of data.copy.clues[1].clues) {
+    for (const downEntry of downClues) {
       const entry: Entry = {
         clue: downEntry.clue,
         answer: downEntry.answer,
@@ -115,4 +206,9 @@ export default class WSJSource implements CrosswordPuzzleSource {
 
     return entries;
   }
+}
+
+interface PuzzleWithWSJId {
+  wsjId: number;
+  puzzle: CrosswordPuzzle;
 }

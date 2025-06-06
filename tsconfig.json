@@ -3,7 +3,11 @@
     "composite": true, /* Enable constraints that allow a TypeScript project to be used with project references. */
     "declaration": true,
     "declarationMap": true,
-    "target": "es2016", /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    "target": "es2021", /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    "lib": [
+      "es2021",
+      "dom"
+    ],
     "module": "commonjs", /* Specify what module code is generated. */
     "baseUrl": ".",
     "strict": true, /* Enable all strict type-checking options. */

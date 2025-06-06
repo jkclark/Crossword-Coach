@@ -1,7 +1,7 @@
 import { CrosswordPuzzle, Entry, getEmptyPuzzle } from "@crosswordcoach/common";
-import CrosswordPuzzleSource from "../crosswordPuzzleSource";
+import CrosswordPuzzleSource, { CrosswordPuzzleSourcePreFetchURLs } from "../crosswordPuzzleSource";
 
-export default class NYTSource implements CrosswordPuzzleSource {
+export default class NYTSource implements CrosswordPuzzleSource, CrosswordPuzzleSourcePreFetchURLs {
   BASE_PUZZLE_URL = "https://www.nytimes.com/svc/crosswords/v6/puzzle/daily/";
   static SOURCE_NAME = "NYT";
 
