@@ -10,15 +10,11 @@ export default class WSJSource implements CrosswordPuzzleSource, CrosswordPuzzle
   BASE_PUZZLE_URL = "https://www.wsj.com/puzzles/crossword/";
   static SOURCE_NAME = "WSJ";
 
-  private startDate: Date;
-  private startId: number;
-  private endDate: Date;
+  private datesAndIds: PuzzleDateAndId[];
   private cookie: string; // Required for WSJ request
 
-  constructor(startDate: Date, startId: number, endDate: Date, cookie: string) {
-    this.startDate = startDate;
-    this.startId = startId;
-    this.endDate = endDate;
+  constructor(datesAndIds: PuzzleDateAndId[], cookie: string) {
+    this.datesAndIds = datesAndIds;
 
     if (!cookie) {
       throw new Error("WSJSource cannot be initialized without a cookie");
@@ -27,8 +23,10 @@ export default class WSJSource implements CrosswordPuzzleSource, CrosswordPuzzle
   }
 
   async *getAllPuzzles(): AsyncGenerator<CrosswordPuzzle> {
-    for await (const puzzle of this.getWeekOfPuzzles(this.startDate, this.startId)) {
-      yield puzzle;
+    for (const { date, id } of this.datesAndIds) {
+      for await (const puzzle of this.getWeekOfPuzzles(date, id)) {
+        yield puzzle;
+      }
     }
   }
 
@@ -206,6 +204,11 @@ export default class WSJSource implements CrosswordPuzzleSource, CrosswordPuzzle
 
     return entries;
   }
+}
+
+interface PuzzleDateAndId {
+  date: Date;
+  id: number;
 }
 
 interface PuzzleWithWSJId {

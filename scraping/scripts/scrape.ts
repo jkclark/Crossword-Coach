@@ -1,4 +1,5 @@
 import * as dotenv from "dotenv";
+import * as fs from "fs";
 
 import { CrosswordPuzzle } from "../../common/src/interfaces/CrosswordPuzzle";
 import { DataStore } from "../../storage/src/DataStore";
@@ -94,22 +95,37 @@ function clueReferencesOtherClue(clue: string): boolean {
 }
 
 if (require.main === module) {
-  /* Puzzle source */
-  const startDate = new Date("2025-05-19T00:00:00Z");
-  const startId = 67323;
-  const endDate = new Date("2025-06-01T00:00:00Z");
+  /* NYT */
+  // const startDate = new Date("2025-05-19T00:00:00Z");
+  // const endDate = new Date("2025-06-01T00:00:00Z");
   // const cookie = process.env.NYT_COOKIE;
+
+  // const dataSource = new NYTSource(startDate, endDate, cookie);
+
+  // const puzzleDirectory = NYTSource.SOURCE_NAME;
+
+  /* WSJ */
+  // Load from WSJDatesAndIds.json
+  const datesAndIds = JSON.parse(fs.readFileSync("./scripts/WSJDatesAndIds.json", "utf-8")).datesAndIds;
+
+  // Convert date strings to Date objects
+  for (const dateAndId of datesAndIds) {
+    dateAndId.date = new Date(dateAndId.date);
+  }
+
   const cookie = process.env.WSJ_COOKIE;
+
+  const puzzleDirectory = WSJSource.SOURCE_NAME;
 
   if (!cookie) {
     throw new Error("..._COOKIE environment variable is not set");
   }
 
   // const dataSource = new NYTSource(startDate, endDate, cookie);
-  const dataSource = new WSJSource(startDate, startId, endDate, cookie);
+  const dataSource = new WSJSource(datesAndIds, cookie);
 
   /* Data store */
-  const dummyDataStore = new FileDataStore(`../temp/${WSJSource.SOURCE_NAME}`);
+  const dummyDataStore = new FileDataStore(`../temp/${puzzleDirectory}`);
 
   // mainPreFetchURLs(dataSource, dummyDataStore);
   mainOnTheFly(dataSource, dummyDataStore);
