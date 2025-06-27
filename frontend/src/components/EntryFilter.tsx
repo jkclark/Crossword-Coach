@@ -101,7 +101,7 @@ const EntryFilter: React.FC = () => {
           <div className="modal-action">
             <form method="dialog">
               {/* if there is a button in form, it will close the modal */}
-              <button className="btn bg-primary" onClick={applyFilters}>
+              <button className="btn bg-primary text-primary-content" onClick={applyFilters}>
                 Apply
               </button>
             </form>
