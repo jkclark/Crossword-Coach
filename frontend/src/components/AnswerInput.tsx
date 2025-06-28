@@ -328,6 +328,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
             answer={char}
             revealed={revealedIndexes.includes(idx)}
             jumping={jumpingIndexes.includes(idx)}
+            className={`border-2 ${idx !== 0 ? "border-l-0" : ""}`}
           />
         ))}
       </div>
