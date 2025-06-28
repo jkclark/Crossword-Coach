@@ -107,6 +107,9 @@ const EntryFilter: React.FC = () => {
             </form>
           </div>
         </div>
+        <form method="dialog" className="modal-backdrop">
+          <button className="!cursor-default">Close</button>
+        </form>
       </dialog>
     </>
   );
