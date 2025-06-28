@@ -1,5 +1,5 @@
 import { useSetAtom } from "jotai";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { entryFilterOptionsAtom } from "../state";
 
 const EntryFilter: React.FC = () => {
@@ -25,11 +25,38 @@ const EntryFilter: React.FC = () => {
   // Required to let us reset the day-of-the-week form when the source is reset
   const dayOfWeekFormRef = useRef<HTMLFormElement>(null);
 
+  // Ref for the Settings button in order to remove focus when closing the modal
+  const settingsButtonRef = useRef<HTMLButtonElement>(null);
+  // Ref for the dialog in order to remove focus when closing the modal
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  // Lose focus on the Settings button when the modal closes
+  const blurSettingsButton = () => {
+    settingsButtonRef.current?.blur();
+  };
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.addEventListener("close", blurSettingsButton);
+    return () => {
+      dialog.removeEventListener("close", blurSettingsButton);
+    };
+  }, []);
+
   const openModal = () => {
-    const modal = document.getElementById("my_modal_1") as HTMLDialogElement | null;
+    const modal = dialogRef.current;
     if (modal) {
       modal.showModal();
     }
+  };
+
+  const closeModal = () => {
+    const modal = dialogRef.current;
+    if (modal) {
+      modal.close();
+    }
+    blurSettingsButton();
   };
 
   const setSource = (newSource: string | null) => {
@@ -52,14 +79,15 @@ const EntryFilter: React.FC = () => {
       source: selectedSource !== null ? selectedSource : undefined,
       dayOfWeek: selectedDayOfWeek !== null ? selectedDayOfWeek : undefined,
     });
+    closeModal(); // Close and blur after applying
   };
 
   return (
     <>
-      <button className="btn" onClick={openModal}>
+      <button className="btn" onClick={openModal} ref={settingsButtonRef}>
         Settings
       </button>
-      <dialog id="my_modal_1" className="modal">
+      <dialog id="my_modal_1" className="modal" ref={dialogRef}>
         <div className="modal-box max-w-3xl">
           <h1 className="mb-4 font-bold text-2xl">Filter</h1>
           <h2 className="mb-2 text-lg">Publication</h2>
@@ -101,14 +129,16 @@ const EntryFilter: React.FC = () => {
           <div className="modal-action">
             <form method="dialog">
               {/* if there is a button in form, it will close the modal */}
-              <button className="btn bg-primary text-primary-content" onClick={applyFilters}>
+              <button className="btn bg-primary text-primary-content" onClick={applyFilters} type="button">
                 Apply
               </button>
             </form>
           </div>
         </div>
         <form method="dialog" className="modal-backdrop">
-          <button className="!cursor-default">Close</button>
+          <button className="!cursor-default" onClick={closeModal} type="button">
+            Close
+          </button>
         </form>
       </dialog>
     </>
