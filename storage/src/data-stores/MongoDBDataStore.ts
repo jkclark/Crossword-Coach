@@ -68,10 +68,6 @@ export default class MongoDBDataStore implements DataStore {
   /**
    * Save a puzzle to the database.
    *
-   * Puzzles and their clues are stored in two separate collections:
-   * - The `puzzles` collection stores the puzzle metadata (e.g., id, date, source, etc.)
-   * - The `entries` collection stores the clues and answers, along with a list of puzzle IDs they belong to.
-   *
    * @param puzzle The puzzle to save
    */
   async savePuzzle(puzzle: CrosswordPuzzle): Promise<void> {
@@ -122,6 +118,6 @@ export default class MongoDBDataStore implements DataStore {
   async deleteAll(): Promise<void> {
     await this.connect();
     await this.db.collection(MongoDBDataStore.ENTRIES_COLLECTION).deleteMany({});
-    console.log("Deleted all entries and puzzles from the database");
+    console.log("Deleted all entries from the database");
   }
 }

@@ -1,12 +1,11 @@
 import * as dotenv from "dotenv";
-import * as fs from "fs";
 
 import { CrosswordPuzzle } from "../../common/src/interfaces/CrosswordPuzzle";
 import { DataStore } from "../../storage/src/DataStore";
 import FileDataStore from "../../storage/src/data-stores/FileDataStore";
 
-import WSJSource from "../src/crossword-puzzle-sources/WSJSource";
-// import NYTSource from "../src/crossword-puzzle-sources/NYTSource";
+// import WSJSource from "../src/crossword-puzzle-sources/WSJSource";
+import NYTSource from "../src/crossword-puzzle-sources/NYTSource";
 import CrosswordPuzzleSource, {
   CrosswordPuzzleSourceOnTheFly,
   CrosswordPuzzleSourcePreFetchURLs,
@@ -96,37 +95,35 @@ function clueReferencesOtherClue(clue: string): boolean {
 
 if (require.main === module) {
   /* NYT */
-  // const startDate = new Date("2025-05-19T00:00:00Z");
-  // const endDate = new Date("2025-06-01T00:00:00Z");
-  // const cookie = process.env.NYT_COOKIE;
+  const startDate = new Date("2024-01-01T00:00:00Z");
+  const endDate = new Date("2025-04-30T00:00:00Z");
+  const cookie = process.env.NYT_COOKIE;
 
-  // const dataSource = new NYTSource(startDate, endDate, cookie);
-
-  // const puzzleDirectory = NYTSource.SOURCE_NAME_SHORT;
+  const puzzleDirectory = NYTSource.SOURCE_NAME_SHORT;
 
   /* WSJ */
   // Load from WSJDatesAndIds.json
-  const datesAndIds = JSON.parse(fs.readFileSync("./scripts/WSJDatesAndIds.json", "utf-8")).datesAndIds;
+  // const datesAndIds = JSON.parse(fs.readFileSync("./scripts/WSJDatesAndIds.json", "utf-8")).datesAndIds;
 
   // Convert date strings to Date objects
-  for (const dateAndId of datesAndIds) {
-    dateAndId.date = new Date(dateAndId.date);
-  }
+  // for (const dateAndId of datesAndIds) {
+  //   dateAndId.date = new Date(dateAndId.date);
+  // }
 
-  const cookie = process.env.WSJ_COOKIE;
+  // const cookie = process.env.WSJ_COOKIE;
 
-  const puzzleDirectory = WSJSource.SOURCE_NAME_SHORT;
+  // const puzzleDirectory = WSJSource.SOURCE_NAME_SHORT;
 
   if (!cookie) {
     throw new Error("..._COOKIE environment variable is not set");
   }
 
-  // const dataSource = new NYTSource(startDate, endDate, cookie);
-  const dataSource = new WSJSource(datesAndIds, cookie);
+  const dataSource = new NYTSource(startDate, endDate, cookie);
+  // const dataSource = new WSJSource(datesAndIds, cookie);
 
   /* Data store */
   const dummyDataStore = new FileDataStore(`../temp/${puzzleDirectory}`);
 
-  // mainPreFetchURLs(dataSource, dummyDataStore);
-  mainOnTheFly(dataSource, dummyDataStore);
+  mainPreFetchURLs(dataSource, dummyDataStore);
+  // mainOnTheFly(dataSource, dummyDataStore);
 }
