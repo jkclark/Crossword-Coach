@@ -10,6 +10,8 @@ export const isLoadingEntriesAtom = atom(false);
 export const allEntriesAtom = atom({} as { [page: number]: Entry[] });
 export const currentEntryIndexAtom = atom<number | undefined>(undefined);
 export const currentEntryPageAtom = atom<number | undefined>(undefined);
+export const correctScoreAtom = atom<number>(0);
+export const totalScoreAtom = atom<number>(0);
 export const streakAtom = atom<number>(0);
 
 export function getNextEntryIndexAndPage(

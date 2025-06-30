@@ -13,7 +13,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   const [currentSquareIndex, setCurrentSquareIndex] = useState(0);
   const [userInput, setUserInput] = useState<string[]>(Array(answer.length).fill(""));
   const [revealedIndexes, setRevealedIndexes] = useState<number[]>([]);
-  const { setStreak, resetStreak } = useScore();
+  const { setStreak, resetStreak, setCorrectScore, setTotalScore } = useScore();
 
   /* Animation */
   const [jumpingIndexes, setJumpingIndexes] = useState<number[]>([]);
@@ -160,11 +160,15 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
    * Get ready for the next entry.
    */
   const goToNextEntry = useCallback(() => {
-    /* Either increment the streak, or reset it if all letters are revealed */
+    /* Update score and streak */
     if (allLettersRevealed) {
       resetStreak();
+
+      setTotalScore((prev) => prev + 1);
     } else {
       setStreak((prev) => prev + 1);
+      setCorrectScore((prev) => prev + 1);
+      setTotalScore((prev) => prev + 1);
     }
 
     // NOTE: We don't have to reset the user input, current square index, or revealed indexes
@@ -179,6 +183,8 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     allLettersRevealed,
     resetStreak,
     setStreak,
+    setCorrectScore,
+    setTotalScore,
     currentEntryIndex,
     currentEntryPage,
     setCurrentEntryIndex,
