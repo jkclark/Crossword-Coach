@@ -2,6 +2,7 @@ import { useAtomValue } from "jotai";
 
 import AnswerInput from "./components/AnswerInput";
 import Navbar from "./components/Navbar";
+import ScoreDisplay from "./components/ScoreDisplay";
 import { currentEntryIndexAtom, currentEntryPageAtom, isLoadingEntriesAtom } from "./state";
 import { useEntries } from "./useEntries";
 import { useMinimumLoading } from "./useMinimumLoading";
@@ -46,6 +47,9 @@ function App() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
+      <div className="flex flex-row w-full justify-end px-4 pt-2">
+        <ScoreDisplay />
+      </div>
       <div className="container mx-auto text-center flex flex-col justify-center items-center flex-1">
         {entryDisplayDiv ? entryDisplayDiv : isLoadingAtLeast1Second ? loadingDiv : noEntriesLeftDiv}
       </div>

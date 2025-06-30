@@ -3,6 +3,7 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAtom } from "jotai";
+import { useScore } from "../score";
 import { currentEntryIndexAtom, currentEntryPageAtom, getNextEntryIndexAndPage, PAGE_SIZE } from "../state";
 import AnswerInputSquare from "./AnswerInputSquare";
 
@@ -12,6 +13,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   const [currentSquareIndex, setCurrentSquareIndex] = useState(0);
   const [userInput, setUserInput] = useState<string[]>(Array(answer.length).fill(""));
   const [revealedIndexes, setRevealedIndexes] = useState<number[]>([]);
+  const { setScore, resetScore } = useScore();
 
   /* Animation */
   const [jumpingIndexes, setJumpingIndexes] = useState<number[]>([]);
@@ -158,6 +160,13 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
    * Get ready for the next entry.
    */
   const goToNextEntry = useCallback(() => {
+    /* Either increment the score, or reset it if all letters are revealed */
+    if (allLettersRevealed) {
+      resetScore();
+    } else {
+      setScore((prev) => prev + 1);
+    }
+
     // NOTE: We don't have to reset the user input, current square index, or revealed indexes
     // here, because the user input and the current square index are reset in
     // the parent component when the entry (and thus this component's key) changes,
@@ -166,7 +175,15 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     const { nextIndex, nextPage } = getNextEntryIndexAndPage(currentEntryIndex, currentEntryPage, PAGE_SIZE);
     setCurrentEntryIndex(nextIndex);
     setCurrentEntryPage(nextPage);
-  }, [currentEntryIndex, currentEntryPage, setCurrentEntryIndex, setCurrentEntryPage]);
+  }, [
+    allLettersRevealed,
+    resetScore,
+    setScore,
+    currentEntryIndex,
+    currentEntryPage,
+    setCurrentEntryIndex,
+    setCurrentEntryPage,
+  ]);
 
   /**
    * Check if the user input matches the answer.
