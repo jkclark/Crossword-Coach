@@ -1,10 +1,10 @@
 import { useAtom } from "jotai";
-import { scoreAtom } from "./state";
+import { streakAtom } from "./state";
 
 export function useScore() {
-  const [score, setScore] = useAtom(scoreAtom);
+  const [streak, setStreak] = useAtom(streakAtom);
 
-  const resetScore = () => setScore(0);
+  const resetStreak = () => setStreak(0);
 
-  return { score, setScore, resetScore };
+  return { streak, setStreak, resetStreak };
 }
