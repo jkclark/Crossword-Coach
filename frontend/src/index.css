@@ -2,12 +2,9 @@
 @plugin "daisyui";
 
 /* To prevent everything from shifting to the left when opening the entry-filter modal */
-html,
-body {
-  width: 100vw;
-  min-width: 100vw;
-  max-width: 100vw;
-  overflow-x: hidden;
+/* From https://github.com/saadeghi/daisyui/issues/3040#issuecomment-2131174823 */
+html {
+  scrollbar-gutter: auto !important;
 }
 
 /* For animating a correct answer */
