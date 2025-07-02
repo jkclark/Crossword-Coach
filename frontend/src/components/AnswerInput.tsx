@@ -3,15 +3,24 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAtom } from "jotai";
-import { useScore } from "../score";
-import { currentEntryIndexAtom, currentEntryPageAtom, getNextEntryIndexAndPage, PAGE_SIZE } from "../state";
+import {
+  currentEntryIndexAtom,
+  currentEntryPageAtom,
+  getNextEntryIndexAndPage,
+  PAGE_SIZE,
+} from "../state";
+import { useScore } from "../useScore";
 import AnswerInputSquare from "./AnswerInputSquare";
 
 const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
-  const [currentEntryIndex, setCurrentEntryIndex] = useAtom(currentEntryIndexAtom);
+  const [currentEntryIndex, setCurrentEntryIndex] = useAtom(
+    currentEntryIndexAtom,
+  );
   const [currentEntryPage, setCurrentEntryPage] = useAtom(currentEntryPageAtom);
   const [currentSquareIndex, setCurrentSquareIndex] = useState(0);
-  const [userInput, setUserInput] = useState<string[]>(Array(answer.length).fill(""));
+  const [userInput, setUserInput] = useState<string[]>(
+    Array(answer.length).fill(""),
+  );
   const [revealedIndexes, setRevealedIndexes] = useState<number[]>([]);
   const { setStreak, resetStreak, setCorrectScore, setTotalScore } = useScore();
 
@@ -56,7 +65,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       /* Return the previous non-revealed, in-bounds square index */
       return nextIndex;
     },
-    [revealedIndexes]
+    [revealedIndexes],
   );
 
   /**
@@ -67,7 +76,10 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       let nextIndex = current + 1;
 
       /* Check indexes to the right until we find a non-revealed, in-bounds square */
-      while (nextIndex < answerRef.current.length && revealedIndexes.includes(nextIndex)) {
+      while (
+        nextIndex < answerRef.current.length &&
+        revealedIndexes.includes(nextIndex)
+      ) {
         nextIndex++;
       }
 
@@ -79,7 +91,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       /* Return the next non-revealed, in-bounds square index */
       return nextIndex;
     },
-    [revealedIndexes]
+    [revealedIndexes],
   );
 
   /**
@@ -117,7 +129,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       /* Move the current square to the next non-revealed square */
       moveRight();
     },
-    [revealedIndexes, moveRight]
+    [revealedIndexes, moveRight],
   );
 
   /**
@@ -176,7 +188,11 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     // the parent component when the entry (and thus this component's key) changes,
     // unmounting and remounting this component.
     /* Update the current entry index and page */
-    const { nextIndex, nextPage } = getNextEntryIndexAndPage(currentEntryIndex, currentEntryPage, PAGE_SIZE);
+    const { nextIndex, nextPage } = getNextEntryIndexAndPage(
+      currentEntryIndex,
+      currentEntryPage,
+      PAGE_SIZE,
+    );
     setCurrentEntryIndex(nextIndex);
     setCurrentEntryPage(nextPage);
   }, [
@@ -196,16 +212,22 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
    */
   const submitAnswer = useCallback(() => {
     /* If the answer is correct, animate the answer and go to the next entry */
-    if (userInputRef.current.join("").toLowerCase() === answerRef.current.toLowerCase()) {
+    if (
+      userInputRef.current.join("").toLowerCase() ===
+      answerRef.current.toLowerCase()
+    ) {
       const delayBetweenJumps = 70; // milliseconds
 
       /* Animate the answer */
       animateCorrectAnswer(delayBetweenJumps);
 
       /* After animation, go to next entry */
-      setTimeout(() => {
-        goToNextEntry();
-      }, answerRef.current.length * delayBetweenJumps + 400); // Wait for all jumps to finish
+      setTimeout(
+        () => {
+          goToNextEntry();
+        },
+        answerRef.current.length * delayBetweenJumps + 400,
+      ); // Wait for all jumps to finish
     } else {
       /* If the answer is incorrect, shake the answer */
       setIsShaking(true);
@@ -228,7 +250,8 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     if (unrevealedIndexes.length === 0) return;
 
     /* Pick a random unrevealed index */
-    const randomIndex = unrevealedIndexes[Math.floor(Math.random() * unrevealedIndexes.length)];
+    const randomIndex =
+      unrevealedIndexes[Math.floor(Math.random() * unrevealedIndexes.length)];
 
     /* Add it to the revealed indexes */
     setRevealedIndexes((prev) => [...prev, randomIndex]);
@@ -342,7 +365,9 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
   return (
     <>
-      <div className={`flex justify-center mb-5 ${isShaking ? "animate-shake" : ""}`}>
+      <div
+        className={`mb-5 flex justify-center ${isShaking ? "animate-shake" : ""}`}
+      >
         {answer.split("").map((char, idx) => (
           <AnswerInputSquare
             key={idx}

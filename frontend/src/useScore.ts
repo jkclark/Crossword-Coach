@@ -7,7 +7,7 @@ export function useScore() {
   const [totalScore, setTotalScore] = useAtom(totalScoreAtom);
 
   /* Derived state */
-  const accuracy = totalScore > 0 ? (correctScore / totalScore) * 100 : 0;
+  const accuracy = totalScore > 0 ? (correctScore / totalScore) * 100 : null;
 
   const resetStreak = () => setStreak(0);
 
