@@ -20,8 +20,8 @@ async function main() {
 
   await dataStore.connect();
 
-  // await doGet(dataStore);
-  await doSave(dataStore);
+  await doGet(dataStore);
+  // await doSave(dataStore);
 
   await dataStore.close();
 }
@@ -30,6 +30,7 @@ async function doGet(dataStore: DataStore) {
   const options = {
     source: "NYT",
     dayOfWeek: 0,
+    answerLength: { min: 11, max: 15 },
     orderBy: "_id",
     orderDirection: "ASC",
     pageSize: 10,

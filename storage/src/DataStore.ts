@@ -14,6 +14,7 @@ export interface GetEntriesFilterOptions {
   /* Filtering */
   source?: string;
   dayOfWeek?: number;
+  answerLength?: AnswerLengthRange;
 }
 
 export interface GetEntriesOptions extends GetEntriesFilterOptions {
@@ -24,4 +25,9 @@ export interface GetEntriesOptions extends GetEntriesFilterOptions {
   /* Pagination */
   pageSize: number; // Number of entries to return
   page: number; // Page number (0-based)
+}
+
+interface AnswerLengthRange {
+  min: number; // Minimum length of the answer
+  max: number; // Maximum length of the answer
 }

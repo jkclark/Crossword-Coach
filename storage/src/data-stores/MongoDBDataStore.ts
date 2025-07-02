@@ -49,6 +49,21 @@ export default class MongoDBDataStore implements DataStore {
       throw new Error("Day-of-week-only filtering is not supported. Please provide a source.");
     }
 
+    // Add answer length filter if present
+    if (options.answerLength) {
+      const answerLengthExpr = {
+        $and: [
+          { $gte: [{ $strLenCP: "$answer" }, options.answerLength.min] },
+          { $lte: [{ $strLenCP: "$answer" }, options.answerLength.max] },
+        ],
+      };
+      if (filter.$and) {
+        filter.$and.push({ $expr: answerLengthExpr });
+      } else {
+        filter.$expr = answerLengthExpr;
+      }
+    }
+
     /* Sort */
     const sort: Record<string, 1 | -1> = {
       [options.orderBy]: options.orderDirection === "ASC" ? 1 : -1,
