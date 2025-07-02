@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: nord --default, business --prefersdark;
+  themes:
+    nord --default,
+    business --prefersdark;
 }
 
 /* To prevent everything from shifting to the left when opening the entry-filter modal */
@@ -60,4 +62,18 @@ html {
  */
 .animate-shake {
   animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Force range slider thumb to be fully rounded in all browsers */
+/* For some reason my sliders (and badges, among other things) are square
+ * even though they're supposed to be rounded according to DaisyUI.
+ */
+input[type="range"].range::-webkit-slider-thumb {
+  border-radius: 9999px;
+}
+input[type="range"].range::-moz-range-thumb {
+  border-radius: 9999px;
+}
+input[type="range"].range::-ms-thumb {
+  border-radius: 9999px;
 }

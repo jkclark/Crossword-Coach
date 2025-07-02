@@ -5,7 +5,18 @@ import { entryFilterOptionsAtom } from "../state";
 const EntryFilter: React.FC = () => {
   const setEntryFilterOptions = useSetAtom(entryFilterOptionsAtom);
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
-  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<number | null>(null);
+  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<number | null>(
+    null,
+  );
+
+  const MINIMUM_ANSWER_LENGTH = 3;
+  const MAXIMUM_ANSWER_LENGTH = 15;
+  const [answerLengthMin, setAnswerLengthMin] = useState<number | null>(
+    MINIMUM_ANSWER_LENGTH,
+  );
+  const [answerLengthMax, setAnswerLengthMax] = useState<number | null>(
+    MAXIMUM_ANSWER_LENGTH,
+  );
 
   // NOTE: TS is being annoying with allowing me to import a runtime value from
   // the scraping package. So I'm just duplicating it here.
@@ -20,7 +31,15 @@ const EntryFilter: React.FC = () => {
     },
   ];
 
-  const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const DAYS_OF_WEEK = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
 
   // Required to let us reset the day-of-the-week form when the source is reset
   const dayOfWeekFormRef = useRef<HTMLFormElement>(null);
@@ -74,6 +93,44 @@ const EntryFilter: React.FC = () => {
     setSelectedDayOfWeek(newDayOfWeek);
   };
 
+  const updateAnswerLengthMin = (newLength: number | null) => {
+    if (newLength !== null && newLength < MINIMUM_ANSWER_LENGTH) {
+      setAnswerLengthMin(MINIMUM_ANSWER_LENGTH);
+    } else if (newLength !== null && newLength > MAXIMUM_ANSWER_LENGTH) {
+      setAnswerLengthMin(MAXIMUM_ANSWER_LENGTH);
+    } else {
+      setAnswerLengthMin(newLength);
+
+      // Make sure max is at least as large as min
+      if (
+        newLength !== null &&
+        answerLengthMax !== null &&
+        newLength > answerLengthMax
+      ) {
+        setAnswerLengthMax(newLength);
+      }
+    }
+  };
+
+  const updateAnswerLengthMax = (newLength: number | null) => {
+    if (newLength !== null && newLength < MINIMUM_ANSWER_LENGTH) {
+      setAnswerLengthMax(MINIMUM_ANSWER_LENGTH);
+    } else if (newLength !== null && newLength > MAXIMUM_ANSWER_LENGTH) {
+      setAnswerLengthMax(MAXIMUM_ANSWER_LENGTH);
+    } else {
+      setAnswerLengthMax(newLength);
+
+      // Make sure min is at most as large as max
+      if (
+        newLength !== null &&
+        answerLengthMin !== null &&
+        newLength < answerLengthMin
+      ) {
+        setAnswerLengthMin(newLength);
+      }
+    }
+  };
+
   const applyFilters = () => {
     setEntryFilterOptions({
       source: selectedSource !== null ? selectedSource : undefined,
@@ -89,10 +146,65 @@ const EntryFilter: React.FC = () => {
       </button>
       <dialog id="my_modal_1" className="modal" ref={dialogRef}>
         <div className="modal-box max-w-3xl">
-          <h1 className="mb-4 font-bold text-2xl">Filter</h1>
+          <h1 className="mb-4 text-2xl font-bold">Filter</h1>
+
+          <h2 className="mb-2 text-lg">Answer length (inclusive)</h2>
+          <div className="relative mb-2 flex w-full">
+            <div className="mr-3 flex flex-0 flex-col justify-between">
+              <div>min</div>
+              <div>max</div>
+            </div>
+            <div className="flex flex-1 flex-col">
+              <input
+                type="range"
+                min={MINIMUM_ANSWER_LENGTH}
+                max={MAXIMUM_ANSWER_LENGTH}
+                step={1}
+                value={answerLengthMin ?? MINIMUM_ANSWER_LENGTH}
+                onChange={(e) => updateAnswerLengthMin(Number(e.target.value))}
+                className="range range-primary w-full rounded-full"
+              />
+              <div className="mt-2 flex justify-between px-2.5 text-xs">
+                {Array.from({
+                  length: MAXIMUM_ANSWER_LENGTH - MINIMUM_ANSWER_LENGTH + 1,
+                }).map((_, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      display: "inline-flex",
+                      width: "2ch", // 2 characters wide, enough for 2 digits
+                      justifyContent: "center",
+                      alignItems: "center",
+                      fontVariantNumeric: "tabular-nums",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    {i + MINIMUM_ANSWER_LENGTH}
+                  </span>
+                ))}
+              </div>
+              <input
+                type="range"
+                min={MINIMUM_ANSWER_LENGTH}
+                max={MAXIMUM_ANSWER_LENGTH}
+                step={1}
+                value={answerLengthMax ?? MAXIMUM_ANSWER_LENGTH}
+                onChange={(e) => updateAnswerLengthMax(Number(e.target.value))}
+                className="range range-primary mt-2 w-full rounded-full"
+              />
+            </div>
+          </div>
+
+          <br />
+
           <h2 className="mb-2 text-lg">Publication</h2>
-          <form className="filter flex flex-row gap-y-1">
-            <input className="btn btn-square" type="reset" value="×" onClick={() => setSource(null)} />
+          <form className="flex flex-row gap-y-1 filter">
+            <input
+              className="btn btn-square"
+              type="reset"
+              value="×"
+              onClick={() => setSource(null)}
+            />
             {SOURCES.map((source, index) => (
               <input
                 key={index}
@@ -104,9 +216,11 @@ const EntryFilter: React.FC = () => {
               />
             ))}
           </form>
+
           <br />
-          <h2 className="mb-2 bold text-lg">Day of the week</h2>
-          <form ref={dayOfWeekFormRef} className="filter flex flex-row gap-y-1">
+
+          <h2 className="bold mb-2 text-lg">Day of the week</h2>
+          <form ref={dayOfWeekFormRef} className="flex flex-row gap-y-1 filter">
             <input
               className="btn btn-square"
               type="reset"
@@ -129,14 +243,22 @@ const EntryFilter: React.FC = () => {
           <div className="modal-action">
             <form method="dialog">
               {/* if there is a button in form, it will close the modal */}
-              <button className="btn bg-primary text-primary-content" onClick={applyFilters} type="button">
+              <button
+                className="btn bg-primary text-primary-content"
+                onClick={applyFilters}
+                type="button"
+              >
                 Apply
               </button>
             </form>
           </div>
         </div>
         <form method="dialog" className="modal-backdrop">
-          <button className="!cursor-default" onClick={closeModal} type="button">
+          <button
+            className="!cursor-default"
+            onClick={closeModal}
+            type="button"
+          >
             Close
           </button>
         </form>
