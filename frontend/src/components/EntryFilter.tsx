@@ -11,10 +11,10 @@ const EntryFilter: React.FC = () => {
 
   const MINIMUM_ANSWER_LENGTH = 3;
   const MAXIMUM_ANSWER_LENGTH = 15;
-  const [answerLengthMin, setAnswerLengthMin] = useState<number | null>(
+  const [answerLengthMin, setAnswerLengthMin] = useState<number>(
     MINIMUM_ANSWER_LENGTH,
   );
-  const [answerLengthMax, setAnswerLengthMax] = useState<number | null>(
+  const [answerLengthMax, setAnswerLengthMax] = useState<number>(
     MAXIMUM_ANSWER_LENGTH,
   );
 
@@ -93,39 +93,31 @@ const EntryFilter: React.FC = () => {
     setSelectedDayOfWeek(newDayOfWeek);
   };
 
-  const updateAnswerLengthMin = (newLength: number | null) => {
-    if (newLength !== null && newLength < MINIMUM_ANSWER_LENGTH) {
+  const updateAnswerLengthMin = (newLength: number) => {
+    if (newLength < MINIMUM_ANSWER_LENGTH) {
       setAnswerLengthMin(MINIMUM_ANSWER_LENGTH);
-    } else if (newLength !== null && newLength > MAXIMUM_ANSWER_LENGTH) {
+    } else if (newLength > MAXIMUM_ANSWER_LENGTH) {
       setAnswerLengthMin(MAXIMUM_ANSWER_LENGTH);
     } else {
       setAnswerLengthMin(newLength);
 
       // Make sure max is at least as large as min
-      if (
-        newLength !== null &&
-        answerLengthMax !== null &&
-        newLength > answerLengthMax
-      ) {
+      if (newLength > answerLengthMax) {
         setAnswerLengthMax(newLength);
       }
     }
   };
 
-  const updateAnswerLengthMax = (newLength: number | null) => {
-    if (newLength !== null && newLength < MINIMUM_ANSWER_LENGTH) {
+  const updateAnswerLengthMax = (newLength: number) => {
+    if (newLength < MINIMUM_ANSWER_LENGTH) {
       setAnswerLengthMax(MINIMUM_ANSWER_LENGTH);
-    } else if (newLength !== null && newLength > MAXIMUM_ANSWER_LENGTH) {
+    } else if (newLength > MAXIMUM_ANSWER_LENGTH) {
       setAnswerLengthMax(MAXIMUM_ANSWER_LENGTH);
     } else {
       setAnswerLengthMax(newLength);
 
       // Make sure min is at most as large as max
-      if (
-        newLength !== null &&
-        answerLengthMin !== null &&
-        newLength < answerLengthMin
-      ) {
+      if (newLength < answerLengthMin) {
         setAnswerLengthMin(newLength);
       }
     }
@@ -160,7 +152,7 @@ const EntryFilter: React.FC = () => {
                 min={MINIMUM_ANSWER_LENGTH}
                 max={MAXIMUM_ANSWER_LENGTH}
                 step={1}
-                value={answerLengthMin ?? MINIMUM_ANSWER_LENGTH}
+                value={answerLengthMin}
                 onChange={(e) => updateAnswerLengthMin(Number(e.target.value))}
                 className="range range-primary w-full rounded-full"
               />
@@ -188,7 +180,7 @@ const EntryFilter: React.FC = () => {
                 min={MINIMUM_ANSWER_LENGTH}
                 max={MAXIMUM_ANSWER_LENGTH}
                 step={1}
-                value={answerLengthMax ?? MAXIMUM_ANSWER_LENGTH}
+                value={answerLengthMax}
                 onChange={(e) => updateAnswerLengthMax(Number(e.target.value))}
                 className="range range-primary mt-2 w-full rounded-full"
               />
