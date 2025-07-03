@@ -4,11 +4,11 @@ import { entryFilterOptionsAtom } from "../state";
 
 const EntryFilter: React.FC = () => {
   const setEntryFilterOptions = useSetAtom(entryFilterOptionsAtom);
-  const [selectedSource, setSelectedSource] = useState<string | null>(null);
-  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<number | null>(
-    null,
-  );
 
+  /* Revealed letters */
+  const [revealedLetters, setRevealedLetters] = useState<number>(0);
+
+  /* Answer length */
   const MINIMUM_ANSWER_LENGTH = 3;
   const MAXIMUM_ANSWER_LENGTH = 15;
   const [answerLengthMin, setAnswerLengthMin] = useState<number>(
@@ -16,6 +16,12 @@ const EntryFilter: React.FC = () => {
   );
   const [answerLengthMax, setAnswerLengthMax] = useState<number>(
     MAXIMUM_ANSWER_LENGTH,
+  );
+
+  /* Source and day of week */
+  const [selectedSource, setSelectedSource] = useState<string | null>(null);
+  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<number | null>(
+    null,
   );
 
   // NOTE: TS is being annoying with allowing me to import a runtime value from
@@ -121,6 +127,18 @@ const EntryFilter: React.FC = () => {
         setAnswerLengthMin(newLength);
       }
     }
+
+    if (newLength - 1 < revealedLetters) {
+      setRevealedLetters(newLength - 1);
+    }
+  };
+
+  const updateRevealedLetters = (newCount: number) => {
+    if (newCount > answerLengthMax - 1) {
+      setRevealedLetters(answerLengthMax - 1);
+    } else {
+      setRevealedLetters(newCount);
+    }
   };
 
   const applyFilters = () => {
@@ -140,9 +158,11 @@ const EntryFilter: React.FC = () => {
         <div className="modal-box max-w-3xl">
           <h1 className="mb-4 text-2xl font-bold">Filter</h1>
 
-          <h2 className="mb-2 text-lg">Answer length (inclusive)</h2>
+          <h2 className="mb-2 text-lg">
+            Answer length (TODO: add a little "i" icon that's hoverable)
+          </h2>
           <div className="relative mb-2 flex w-full">
-            <div className="mr-3 flex flex-0 flex-col justify-between">
+            <div className="mr-3 flex w-[3ch] flex-col justify-between">
               <div>min</div>
               <div>max</div>
             </div>
@@ -184,6 +204,47 @@ const EntryFilter: React.FC = () => {
                 onChange={(e) => updateAnswerLengthMax(Number(e.target.value))}
                 className="range range-primary mt-2 w-full rounded-full"
               />
+            </div>
+          </div>
+
+          <br />
+
+          <h2 className="mb-2 text-lg">
+            Prefilled squares (TODO: add a little "i" icon that's hoverable)
+          </h2>
+          <div className="relative mb-2 flex w-full">
+            <div className="mr-3 flex w-[3ch] flex-col justify-between">
+              <div>set</div>
+            </div>
+            <div className="flex flex-1 flex-col">
+              <input
+                type="range"
+                min={0}
+                max={MAXIMUM_ANSWER_LENGTH - 1}
+                step={1}
+                value={revealedLetters}
+                onChange={(e) => updateRevealedLetters(Number(e.target.value))}
+                className="range range-primary w-full rounded-full"
+              />
+              <div className="mt-2 flex justify-between px-2.5 text-xs">
+                {Array.from({
+                  length: MAXIMUM_ANSWER_LENGTH,
+                }).map((_, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      display: "inline-flex",
+                      width: "2ch", // 2 characters wide, enough for 2 digits
+                      justifyContent: "center",
+                      alignItems: "center",
+                      fontVariantNumeric: "tabular-nums",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    {i}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
