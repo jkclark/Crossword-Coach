@@ -11,7 +11,7 @@ const ScoreDisplay: React.FC = () => {
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="absolute overflow-x-auto">
       <table className="table">
         <tbody>
           <tr>
