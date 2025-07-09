@@ -1,23 +1,23 @@
-import { useSetAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
-import { entryFilterOptionsAtom } from "../state";
+import {
+  answerLengthMaxAtom,
+  answerLengthMinAtom,
+  entryFilterOptionsAtom,
+  MAXIMUM_ANSWER_LENGTH,
+  MINIMUM_ANSWER_LENGTH,
+  revealedLettersAtom,
+} from "../state";
 
 const EntryFilter: React.FC = () => {
   const setEntryFilterOptions = useSetAtom(entryFilterOptionsAtom);
 
   /* Revealed letters */
-  const [revealedLetters, setRevealedLetters] = useState<number>(0);
+  const [revealedLetters, setRevealedLetters] = useAtom(revealedLettersAtom);
 
   /* Answer length */
-  const MINIMUM_ANSWER_LENGTH = 3;
-  const MAXIMUM_ANSWER_LENGTH = 15;
-  const [answerLengthMin, setAnswerLengthMin] = useState<number>(
-    MINIMUM_ANSWER_LENGTH,
-  );
-  const [answerLengthMax, setAnswerLengthMax] = useState<number>(
-    MAXIMUM_ANSWER_LENGTH,
-  );
-
+  const [answerLengthMin, setAnswerLengthMin] = useAtom(answerLengthMinAtom);
+  const [answerLengthMax, setAnswerLengthMax] = useAtom(answerLengthMaxAtom);
   /* Source and day of week */
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<number | null>(
@@ -145,6 +145,17 @@ const EntryFilter: React.FC = () => {
     setEntryFilterOptions({
       source: selectedSource !== null ? selectedSource : undefined,
       dayOfWeek: selectedDayOfWeek !== null ? selectedDayOfWeek : undefined,
+      answerLength:
+        // Only include answer length if either min or max is changed
+        // from the default values
+        answerLengthMin !== MINIMUM_ANSWER_LENGTH ||
+        answerLengthMax !== MAXIMUM_ANSWER_LENGTH
+          ? {
+              min: answerLengthMin,
+              max: answerLengthMax,
+            }
+          : undefined,
+      revealedLetters: revealedLetters > 0 ? revealedLetters : undefined,
     });
     closeModal(); // Close and blur after applying
   };
