@@ -236,60 +236,28 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     }
   }, [goToNextEntry]);
 
-  /**
-   * Reveal a random unrevealed letter.
-   */
-  const revealRandomLetter = useCallback(() => {
-    /* Find all unrevealed indexes */
-    const unrevealedIndexes = answerRef.current
-      .split("")
-      .map((_, idx) => idx)
-      .filter((idx) => !revealedIndexes.includes(idx));
+  const revealAllLetters = useCallback(() => {
+    /* If all letters are already revealed, do nothing */
+    if (allLettersRevealed) return;
 
-    /* If no unrevealed letters remain, do nothing */
-    if (unrevealedIndexes.length === 0) return;
-
-    /* Pick a random unrevealed index */
-    const randomIndex =
-      unrevealedIndexes[Math.floor(Math.random() * unrevealedIndexes.length)];
-
-    /* Add it to the revealed indexes */
-    setRevealedIndexes((prev) => [...prev, randomIndex]);
+    /* Reveal all letters */
+    const newRevealedIndexes = answerRef.current.split("").map((_, idx) => idx);
+    setRevealedIndexes(newRevealedIndexes);
 
     /* Update the user input to match the answer */
-    setUserInput((prev) => {
-      const newInput = [...prev];
-      newInput[randomIndex] = answerRef.current[randomIndex];
-      return newInput;
-    });
+    setUserInput(answerRef.current.split(""));
 
-    /* Update current square index if necessary */
-    if (currentSquareIndexRef.current === randomIndex) {
-      setCurrentSquareIndex((prev) => {
-        // Go to the next unrevealed square, or the previous unrevealed square
-        // if there are no more unrevealed squares to the right
-        const nextIndex = getNextNonRevealedIndex(prev);
-        if (nextIndex !== null) {
-          return nextIndex;
-        }
+    /* Reset the current square index */
+    setCurrentSquareIndex(0);
+  }, [allLettersRevealed]);
 
-        const previousIndex = getPreviousNonRevealedIndex(prev);
-        if (previousIndex !== null) {
-          return previousIndex;
-        }
-
-        return prev;
-      });
-    }
-  }, [revealedIndexes, getPreviousNonRevealedIndex, getNextNonRevealedIndex]);
-
-  const revealRandomLetterOrGoNext = useCallback(() => {
+  const revealAllLettersOrGoNext = useCallback(() => {
     if (!allLettersRevealed) {
-      revealRandomLetter();
+      revealAllLetters();
     } else {
       goToNextEntry();
     }
-  }, [allLettersRevealed, revealRandomLetter, goToNextEntry]);
+  }, [allLettersRevealed, revealAllLetters, goToNextEntry]);
 
   const submitAnswerOrGoNext = useCallback(() => {
     // If the user typed in an answer and they haven't given up yet, submit it
@@ -323,7 +291,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
       /* Handle the spacebar */
       if (event.code === "Space" || event.key === " ") {
-        revealRandomLetterOrGoNext();
+        revealAllLettersOrGoNext();
         return;
       }
 
@@ -351,7 +319,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     deleteLetter,
     allLettersRevealed,
     userInputIsFull,
-    revealRandomLetterOrGoNext,
+    revealAllLettersOrGoNext,
     submitAnswerOrGoNext,
   ]);
 
@@ -384,10 +352,10 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       <div className="flex flex-row justify-center gap-2">
         <button
           className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
-          onClick={revealRandomLetter}
+          onClick={revealAllLetters}
           disabled={allLettersRevealed}
         >
-          Give me a letter
+          Give up
         </button>
 
         <button
