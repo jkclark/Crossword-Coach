@@ -2,12 +2,13 @@ import { ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import {
   currentEntryIndexAtom,
   currentEntryPageAtom,
   getNextEntryIndexAndPage,
   PAGE_SIZE,
+  revealedLettersAtom,
 } from "../state";
 import { useScore } from "../useScore";
 import AnswerInputSquare from "./AnswerInputSquare";
@@ -21,6 +22,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   const [userInput, setUserInput] = useState<string[]>(
     Array(answer.length).fill(""),
   );
+  const revealedLetters = useAtomValue(revealedLettersAtom);
   const [revealedIndexes, setRevealedIndexes] = useState<number[]>([]);
   const { setStreak, resetStreak, setCorrectScore, setTotalScore } = useScore();
 
@@ -251,6 +253,64 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     setCurrentSquareIndex(0);
   }, [allLettersRevealed]);
 
+  const revealNLetters = useCallback(
+    (n: number) => {
+      /* If all letters are already revealed, do nothing */
+      if (allLettersRevealed) return;
+
+      /* If n is greater than the number of unrevealed letters, reveal all letters */
+      if (n >= answerRef.current.length - revealedIndexes.length) {
+        revealAllLetters();
+        return;
+      }
+
+      /* Reveal n random unrevealed letters */
+      // Shuffle the unrevealed indexes
+      const unrevealedIndexes = answerRef.current
+        .split("")
+        .map((_, idx) => idx)
+        .filter((idx) => !revealedIndexes.includes(idx));
+      const shuffledIndexes = unrevealedIndexes.sort(() => Math.random() - 0.5);
+      const indexesToReveal = shuffledIndexes.slice(0, n);
+
+      // Add the selected indexes to the revealed indexes
+      setRevealedIndexes((prev) => [...prev, ...indexesToReveal]);
+
+      // Update the user input to match the answer
+      setUserInput((prev) => {
+        const newInput = [...prev];
+        indexesToReveal.forEach((idx) => {
+          newInput[idx] = answerRef.current[idx];
+        });
+        return newInput;
+      });
+
+      //
+      setCurrentSquareIndex(() => {
+        if (!revealedIndexes.includes(0)) {
+          return 0; // If the first square is not revealed, set it as the current square
+        }
+
+        const nextIndex = getNextNonRevealedIndex(0);
+        if (nextIndex !== null) {
+          return nextIndex; // Otherwise, set the next non-revealed square as the current square
+        }
+
+        throw new Error(
+          "No non-revealed squares found, this should not happen.",
+        );
+      });
+    },
+    [
+      getNextNonRevealedIndex,
+      allLettersRevealed,
+      answerRef,
+      revealedIndexes,
+      revealAllLetters,
+      setRevealedIndexes,
+    ],
+  );
+
   const revealAllLettersOrGoNext = useCallback(() => {
     if (!allLettersRevealed) {
       revealAllLetters();
@@ -270,6 +330,8 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       goToNextEntry();
     }
   }, [userInputIsFull, allLettersRevealed, submitAnswer, goToNextEntry]);
+
+  // TODO: Reveal initial letters
 
   /* Handle keyboard input */
   useEffect(() => {
