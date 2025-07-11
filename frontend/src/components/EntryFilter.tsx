@@ -112,6 +112,11 @@ const EntryFilter: React.FC = () => {
         setAnswerLengthMax(newLength);
       }
     }
+
+    // Make sure revealed letters is at most as large as min - 1
+    if (newLength - 1 < revealedLetters) {
+      setRevealedLetters(newLength - 1);
+    }
   };
 
   const updateAnswerLengthMax = (newLength: number) => {
@@ -125,17 +130,19 @@ const EntryFilter: React.FC = () => {
       // Make sure min is at most as large as max
       if (newLength < answerLengthMin) {
         setAnswerLengthMin(newLength);
-      }
-    }
 
-    if (newLength - 1 < revealedLetters) {
-      setRevealedLetters(newLength - 1);
+        // If we're updating answerLengthMin, we also need to make sure
+        // revealed letters is valid (no greater than answerLengthMin - 1)
+        if (newLength - 1 < revealedLetters) {
+          setRevealedLetters(newLength - 1);
+        }
+      }
     }
   };
 
   const updateRevealedLetters = (newCount: number) => {
-    if (newCount > answerLengthMax - 1) {
-      setRevealedLetters(answerLengthMax - 1);
+    if (newCount > answerLengthMin - 1) {
+      setRevealedLetters(answerLengthMin - 1);
     } else {
       setRevealedLetters(newCount);
     }
