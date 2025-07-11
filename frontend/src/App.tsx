@@ -3,7 +3,11 @@ import { useAtomValue } from "jotai";
 import AnswerInput from "./components/AnswerInput";
 import Navbar from "./components/Navbar";
 import ScoreDisplay from "./components/ScoreDisplay";
-import { currentEntryIndexAtom, currentEntryPageAtom, isLoadingEntriesAtom } from "./state";
+import {
+  currentEntryIndexAtom,
+  currentEntryPageAtom,
+  isLoadingEntriesAtom,
+} from "./state";
 import { useEntries } from "./useEntries";
 import { useMinimumLoading } from "./useMinimumLoading";
 
@@ -32,8 +36,9 @@ function App() {
     currentEntryIndex >= 0 &&
     currentEntryIndex < allEntries[currentEntryPage].length ? (
       <div>
-        <div className="w-full text-[clamp(1rem,5vw,2.5rem)] break-words mb-3">
-          {allEntries[currentEntryPage][currentEntryIndex].clue}
+        <div className="mb-3 w-full text-[clamp(1rem,5vw,2.5rem)] break-words">
+          {allEntries[currentEntryPage][currentEntryIndex].clue} (
+          {allEntries[currentEntryPage][currentEntryIndex].answer.length})
         </div>
         <AnswerInput
           key={`${currentEntryPage}-${currentEntryIndex}`}
@@ -42,16 +47,22 @@ function App() {
       </div>
     ) : null;
 
-  const noEntriesLeftDiv = <div className="text-4xl">There don't seem to be any clues left...</div>;
+  const noEntriesLeftDiv = (
+    <div className="text-4xl">There don't seem to be any clues left...</div>
+  );
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <Navbar />
-      <div className="flex flex-row w-full justify-end px-4 pt-2">
+      <div className="flex w-full flex-row justify-end px-4 pt-2">
         <ScoreDisplay />
       </div>
-      <div className="container mx-auto text-center flex flex-col justify-center items-center flex-1">
-        {entryDisplayDiv ? entryDisplayDiv : isLoadingAtLeast1Second ? loadingDiv : noEntriesLeftDiv}
+      <div className="container mx-auto flex flex-1 flex-col items-center justify-center text-center">
+        {entryDisplayDiv
+          ? entryDisplayDiv
+          : isLoadingAtLeast1Second
+            ? loadingDiv
+            : noEntriesLeftDiv}
       </div>
     </div>
   );
