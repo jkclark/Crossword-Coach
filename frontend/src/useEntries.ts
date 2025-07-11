@@ -86,7 +86,6 @@ export function useEntries() {
       const filterOptionsKey = getFilterOptionsKey(entryFilterOptions);
 
       /* Try to retrieve the entry progress from localStorage */
-      console.log();
       const entryProgress = localStorage.getItem(filterOptionsKey);
 
       /* If we have entry progress for these filter options, parse and return it */
@@ -183,6 +182,9 @@ export function useEntries() {
 
   /**
    * Get the full API URL for fetching entries.
+   *
+   * When new options get added, this function will need to be updated
+   * to include them in the URL parameters.
    */
   function buildAPIURL(options: GetEntriesOptions): string {
     const params = new URLSearchParams({
@@ -195,6 +197,10 @@ export function useEntries() {
     if (options.source) params.append("source", options.source);
     if (options.dayOfWeek || options.dayOfWeek === 0) {
       params.append("dayOfWeek", options.dayOfWeek.toString());
+    }
+    if (options.answerLength) {
+      params.append("answerLengthMin", options.answerLength.min.toString());
+      params.append("answerLengthMax", options.answerLength.max.toString());
     }
 
     return `${import.meta.env.VITE_BASE_API_URL}/${import.meta.env.VITE_ENTRIES_PATH}?${params.toString()}`;
