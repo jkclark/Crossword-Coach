@@ -253,64 +253,6 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     setCurrentSquareIndex(0);
   }, [allLettersRevealed]);
 
-  const revealNLetters = useCallback(
-    (n: number) => {
-      /* If all letters are already revealed, do nothing */
-      if (allLettersRevealed) return;
-
-      /* If n is greater than the number of unrevealed letters, reveal all letters */
-      if (n >= answerRef.current.length - revealedIndexes.length) {
-        revealAllLetters();
-        return;
-      }
-
-      /* Reveal n random unrevealed letters */
-      // Shuffle the unrevealed indexes
-      const unrevealedIndexes = answerRef.current
-        .split("")
-        .map((_, idx) => idx)
-        .filter((idx) => !revealedIndexes.includes(idx));
-      const shuffledIndexes = unrevealedIndexes.sort(() => Math.random() - 0.5);
-      const indexesToReveal = shuffledIndexes.slice(0, n);
-
-      // Add the selected indexes to the revealed indexes
-      setRevealedIndexes((prev) => [...prev, ...indexesToReveal]);
-
-      // Update the user input to match the answer
-      setUserInput((prev) => {
-        const newInput = [...prev];
-        indexesToReveal.forEach((idx) => {
-          newInput[idx] = answerRef.current[idx];
-        });
-        return newInput;
-      });
-
-      //
-      setCurrentSquareIndex(() => {
-        if (!revealedIndexes.includes(0)) {
-          return 0; // If the first square is not revealed, set it as the current square
-        }
-
-        const nextIndex = getNextNonRevealedIndex(0);
-        if (nextIndex !== null) {
-          return nextIndex; // Otherwise, set the next non-revealed square as the current square
-        }
-
-        throw new Error(
-          "No non-revealed squares found, this should not happen.",
-        );
-      });
-    },
-    [
-      getNextNonRevealedIndex,
-      allLettersRevealed,
-      answerRef,
-      revealedIndexes,
-      revealAllLetters,
-      setRevealedIndexes,
-    ],
-  );
-
   const revealAllLettersOrGoNext = useCallback(() => {
     if (!allLettersRevealed) {
       revealAllLetters();
@@ -331,13 +273,42 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     }
   }, [userInputIsFull, allLettersRevealed, submitAnswer, goToNextEntry]);
 
-  // TODO: Reveal initial letters
+  // Reveal initial letters based on revealedLetters
+  useEffect(() => {
+    if (revealedLetters > 0 && answer.length > 0) {
+      /* Pick random unique indexes to reveal */
+      const numToReveal = Math.min(revealedLetters, answer.length);
+      const allIndexes = Array.from({ length: answer.length }, (_, i) => i);
+      const shuffled = allIndexes.sort(() => Math.random() - 0.5);
+      const initialRevealed = shuffled.slice(0, numToReveal);
+
+      /* Set the revealed indexes and user input based on the initial revealed letters */
+      setRevealedIndexes(initialRevealed);
+
+      /* Set the user input to match the answer, filling in revealed letters */
+      setUserInput(() => {
+        const newInput = Array(answer.length).fill("");
+        for (const idx of initialRevealed) {
+          newInput[idx] = answer[idx];
+        }
+        return newInput;
+      });
+
+      /* Set current square index to the left-most unrevealed index, or 0 if all revealed */
+      // NOTE: If all are revealed, it doesn't really matter what we set this to
+      let leftMostUnrevealed = 0;
+      for (let i = 0; i < answer.length; i++) {
+        if (!initialRevealed.includes(i)) {
+          leftMostUnrevealed = i;
+          break;
+        }
+      }
+      setCurrentSquareIndex(leftMostUnrevealed);
+    }
+  }, [answer, revealedLetters]);
 
   /* Handle keyboard input */
   useEffect(() => {
-    /**
-     * Handle keyboard input.
-     */
     const handleKeyDown = (event: KeyboardEvent) => {
       // Ignore input if Ctrl or Meta (Command) key is pressed
       if (event.ctrlKey || event.metaKey) return;
