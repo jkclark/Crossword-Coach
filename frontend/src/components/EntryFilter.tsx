@@ -162,7 +162,6 @@ const EntryFilter: React.FC = () => {
               max: answerLengthMax,
             }
           : undefined,
-      revealedLetters: revealedLetters > 0 ? revealedLetters : undefined,
     });
     closeModal(); // Close and blur after applying
   };
