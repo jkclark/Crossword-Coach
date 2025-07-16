@@ -21,7 +21,7 @@
     "install-vite-for-gh-actions": "cd frontend_dist && npm install vite --verbose && npm install @vitejs/plugin-react-swc --verbose",
     "copy-tsconfig-json": "cp ./tsconfig.json frontend_dist/tsconfig.json",
     "copy-frontend-and-common-and-storage-files": "cd frontend_dist && mkdir frontend && mkdir common && mkdir storage && cp -r ../frontend/* ./frontend && cp -r ../common/* ./common && cp -r ../storage/* ./storage",
-    "copy-env-file": "cp ./frontend/.env frontend_dist/frontend/.env",
+    "copy-env-file": "cp ./frontend/.env.production frontend_dist/frontend/.env.production",
     "type-check-frontend-dist": "cd frontend_dist && tsc --project ./frontend/tsconfig.json",
     "vite-build-frontend-dist": "cd frontend_dist/frontend && npx vite build",
     "generate-frontend-dist": "npm run create-frontend-dist-dir && npm run npm-init-frontend-dist && npm run merge-frontend-dist-jsons && npm run install-frontend-dist-dependencies && npm run install-vite-for-gh-actions && npm run copy-tsconfig-json && npm run copy-frontend-and-common-and-storage-files && npm run copy-env-file && npm run type-check-frontend-dist && npm run vite-build-frontend-dist"
