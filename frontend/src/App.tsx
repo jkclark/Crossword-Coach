@@ -51,6 +51,12 @@ function App() {
     <div className="text-4xl">There don't seem to be any clues left...</div>
   );
 
+  const divToDisplay = isLoadingAtLeast1Second
+    ? loadingDiv
+    : entryDisplayDiv
+      ? entryDisplayDiv
+      : noEntriesLeftDiv;
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
@@ -58,11 +64,7 @@ function App() {
         <ScoreDisplay />
       </div>
       <div className="container mx-auto flex flex-1 flex-col items-center justify-center text-center">
-        {entryDisplayDiv
-          ? entryDisplayDiv
-          : isLoadingAtLeast1Second
-            ? loadingDiv
-            : noEntriesLeftDiv}
+        {divToDisplay}
       </div>
     </div>
   );
