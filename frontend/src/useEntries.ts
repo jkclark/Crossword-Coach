@@ -90,15 +90,10 @@ export function useEntries() {
 
       /* If we have entry progress for these filter options, parse and return it */
       if (entryProgress) {
-        console.log("Found entry progress in localStorage:", entryProgress);
         return JSON.parse(entryProgress) as FilterOptionsEntryProgress;
       }
 
       /* If no entry progress found, return undefined */
-      console.log(
-        "No entry progress found in localStorage for key:",
-        filterOptionsKey,
-      );
       return undefined;
     },
     [],
