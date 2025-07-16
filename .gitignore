@@ -5,3 +5,4 @@ temp/
 api_lambda_package*
 tsconfig.tsbuildinfo
 *.tsbuildinfo
+frontend_dist/
