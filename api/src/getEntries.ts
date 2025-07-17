@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, Context, Handler } from "aws-lambda";
 
+import { Entry } from "common";
 import { GetEntriesOptions } from "storage";
 import { getDataStore } from "./connect";
 import { getCORSHeaders } from "./utils";
@@ -32,16 +33,24 @@ export const handler: Handler = async (event: APIGatewayProxyEvent, context: Con
     /* Get entries */
     const entries = await dataStore.getEntries(options);
 
-    /* Only return clue and answer for each entry */
-    const cluesAndAnswers = entries.map((entry) => ({
-      clue: entry.clue,
-      answer: entry.answer,
-    }));
+    /* Only return clue, answer, and explanation (if present) for each entry */
+    const cluesAnswersAndExplanations = entries.map((entry) => {
+      const entryObj: Entry = {
+        clue: entry.clue,
+        answer: entry.answer,
+      };
+
+      if (entry.explanation !== undefined) {
+        entryObj.explanation = entry.explanation;
+      }
+
+      return entryObj;
+    });
 
     return {
       statusCode: 200,
       headers: getCORSHeaders(),
-      body: JSON.stringify({ entries: cluesAndAnswers }),
+      body: JSON.stringify({ entries: cluesAnswersAndExplanations }),
     };
   } catch (error) {
     return {

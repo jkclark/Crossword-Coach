@@ -8,6 +8,7 @@ export interface CrosswordPuzzle {
 export interface Entry {
   clue: string;
   answer: string;
+  explanation?: string; // Will be present if an explanation has previously been requested
 }
 
 export function getEmptyPuzzle(): CrosswordPuzzle {
