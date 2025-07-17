@@ -8,6 +8,8 @@ export interface DataStore {
   getEntries(options: GetEntriesOptions): Promise<Entry[]>;
 
   savePuzzle(puzzle: CrosswordPuzzle): Promise<void>;
+
+  saveExplanation(clue: string, answer: string, explanation: string): Promise<void>;
 }
 
 export interface GetEntriesFilterOptions {

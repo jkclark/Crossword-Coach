@@ -40,4 +40,8 @@ export default class FileDataStore implements DataStore {
     const puzzleString = JSON.stringify(puzzle, null, 2);
     fs.writeFileSync(`${this.entryFolder}/${puzzleFileName}`, puzzleString, { encoding: "utf-8" });
   }
+
+  async saveExplanation(clue: string, answer: string, explanation: string): Promise<void> {
+    console.error(`NOT IMPELEMENTED: Saving explanation for clue "${clue}" and answer "${answer}"`);
+  }
 }

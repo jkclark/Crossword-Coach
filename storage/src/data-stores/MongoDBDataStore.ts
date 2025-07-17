@@ -130,6 +130,20 @@ export default class MongoDBDataStore implements DataStore {
     console.log(`Inserted puzzle ${puzzle.id} into the database`);
   }
 
+  async saveExplanation(clue: string, answer: string, explanation: string): Promise<void> {
+    await this.connect();
+
+    const result = await this.db
+      .collection(MongoDBDataStore.ENTRIES_COLLECTION)
+      .updateOne({ clue, answer }, { $set: { explanation } }, { upsert: false });
+
+    if (result.modifiedCount === 0) {
+      throw new Error(
+        `No entry found for clue "${clue}" and answer "${answer}" while trying to update explanation`
+      );
+    }
+  }
+
   async deleteAll(): Promise<void> {
     await this.connect();
     await this.db.collection(MongoDBDataStore.ENTRIES_COLLECTION).deleteMany({});

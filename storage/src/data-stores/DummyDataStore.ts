@@ -19,4 +19,8 @@ export default class DummyDataStore implements DataStore {
     );
     console.log("Num clues:", puzzle.entries.length);
   }
+
+  async saveExplanation(clue: string, answer: string, explanation: string): Promise<void> {
+    console.error(`NOT IMPLEMENTED: Saving explanation for clue "${clue}" and answer "${answer}"`);
+  }
 }

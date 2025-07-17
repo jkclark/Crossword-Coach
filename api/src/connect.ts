@@ -1,23 +1,23 @@
 import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
 
-import { MongoDBDataStore } from "storage";
+import { DataStore, MongoDBDataStore } from "storage";
 
 /* Connect to MongoDB *outside* the handler to reuse the connection when possible */
-export let mongoDBDataStore: MongoDBDataStore | null = null;
+export let dataStore: DataStore | null = null;
 export let connectionPromise: Promise<void> | null = null;
 
-export async function getDataStore(): Promise<MongoDBDataStore> {
-  if (!mongoDBDataStore) {
-    mongoDBDataStore = new MongoDBDataStore(await getMongoDBURI());
-    connectionPromise = mongoDBDataStore.connect();
+export async function getDataStore(): Promise<DataStore> {
+  if (!dataStore) {
+    dataStore = new MongoDBDataStore(await getMongoDBURI());
+    connectionPromise = dataStore.connect();
   } else if (!connectionPromise) {
     // This shouldn't ever really be the case, but just to be sure
-    connectionPromise = mongoDBDataStore.connect();
+    connectionPromise = dataStore.connect();
   }
 
   await connectionPromise;
 
-  return mongoDBDataStore;
+  return dataStore;
 }
 
 async function getMongoDBURI(): Promise<string> {

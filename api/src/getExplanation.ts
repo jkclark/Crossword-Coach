@@ -1,7 +1,8 @@
 import { APIGatewayProxyEvent, Context, Handler } from "aws-lambda";
 import * as dotenv from "dotenv";
-
 import OpenAI from "openai";
+
+import { getDataStore } from "./connect";
 import { getCORSHeaders } from "./utils";
 
 dotenv.config({ path: "../.env" });
@@ -29,6 +30,12 @@ export const handler: Handler = async (event: APIGatewayProxyEvent, context: Con
 
   const explanation = await askLLMForExplanation(prompt);
 
+  /* Update the entry in the database with the explanation */
+  // NOTE: In theory, this could be done in a separate function or service
+  // so that users don't have to wait for the explanation to be saved.
+  const dataStore = await getDataStore();
+  await dataStore.saveExplanation(clue, answer, explanation);
+
   return {
     statusCode: 200,
     headers: getCORSHeaders(),
@@ -54,7 +61,7 @@ async function askLLMForExplanation(prompt: string): Promise<string> {
   });
 
   const response = await client.responses.create({
-    model: "gpt-4.1-nano",
+    model: "gpt-4.1-mini",
     input: prompt,
   });
 
