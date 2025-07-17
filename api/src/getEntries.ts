@@ -2,6 +2,7 @@ import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
 import { APIGatewayProxyEvent, Context, Handler } from "aws-lambda";
 
 import { GetEntriesOptions, MongoDBDataStore } from "storage";
+import { getCORSHeaders } from "./utils";
 
 // Connect to MongoDB *outside* the handler to reuse the connection when possible
 let mongoDBDataStore: MongoDBDataStore | null = null;
@@ -170,13 +171,5 @@ function parseGetEntriesOptions(params: { [key: string]: string | undefined }): 
     /* Pagination */
     pageSize: pageSizeNum,
     page: pageNum,
-  };
-}
-
-function getCORSHeaders(): { [key: string]: string } {
-  return {
-    "Access-Control-Allow-Origin": "*", // Fine for development
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
   };
 }

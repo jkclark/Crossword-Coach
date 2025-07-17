@@ -13,6 +13,8 @@
     "@aws-sdk/client-ssm": "^3.817.0"
   },
   "devDependencies": {
-    "@types/node": "^22.15.21"
+    "@types/aws-lambda": "^8.10.150",
+    "@types/node": "^22.15.21",
+    "aws-lambda": "^1.0.7"
   }
 }
