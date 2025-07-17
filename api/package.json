@@ -10,7 +10,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@aws-sdk/client-ssm": "^3.817.0"
+    "@aws-sdk/client-ssm": "^3.817.0",
+    "openai": "^5.10.1"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.150",
