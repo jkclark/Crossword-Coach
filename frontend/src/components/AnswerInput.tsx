@@ -6,6 +6,7 @@ import { useAtom, useAtomValue } from "jotai";
 import {
   currentEntryIndexAtom,
   currentEntryPageAtom,
+  displayExplanationAtom,
   getNextEntryIndexAndPage,
   PAGE_SIZE,
   revealedLettersAtom,
@@ -29,6 +30,11 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   /* Animation */
   const [jumpingIndexes, setJumpingIndexes] = useState<number[]>([]);
   const [isShaking, setIsShaking] = useState(false);
+
+  /* Explanation */
+  const [displayExplanation, setDisplayExplanation] = useAtom(
+    displayExplanationAtom,
+  );
 
   /* Derived state */
   const allLettersRevealed = revealedIndexes.length >= answer.length; // In theory should never be greater than
@@ -197,6 +203,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     );
     setCurrentEntryIndex(nextIndex);
     setCurrentEntryPage(nextPage);
+    setDisplayExplanation(false);
   }, [
     allLettersRevealed,
     resetStreak,
@@ -207,6 +214,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     currentEntryPage,
     setCurrentEntryIndex,
     setCurrentEntryPage,
+    setDisplayExplanation,
   ]);
 
   /**
@@ -364,6 +372,10 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     }
   };
 
+  function updateExplanation() {
+    setDisplayExplanation(true);
+  }
+
   return (
     <>
       <div
@@ -383,13 +395,23 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       </div>
 
       <div className="flex flex-row justify-center gap-2">
-        <button
-          className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
-          onClick={revealAllLetters}
-          disabled={allLettersRevealed}
-        >
-          Give up
-        </button>
+        {allLettersRevealed ? (
+          <button
+            className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
+            onClick={updateExplanation}
+            disabled={displayExplanation}
+          >
+            I don't understand
+          </button>
+        ) : (
+          <button
+            className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
+            onClick={revealAllLetters}
+            disabled={allLettersRevealed}
+          >
+            Give up
+          </button>
+        )}
 
         <button
           className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"

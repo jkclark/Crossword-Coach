@@ -25,6 +25,8 @@ export const correctScoreAtom = atom<number>(0);
 export const totalScoreAtom = atom<number>(0);
 export const streakAtom = atom<number>(0);
 
+export const displayExplanationAtom = atom<boolean>(false);
+
 export function getNextEntryIndexAndPage(
   index: number | undefined,
   page: number | undefined,
