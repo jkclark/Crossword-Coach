@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
  * @param speed Typing speed in ms per character (default: 30)
  * @returns The currently displayed text
  */
-export function useTypedOutText(text: string, speed: number = 30): string {
+export function useTypedOutText(text: string | null, speed: number): string {
   const [displayed, setDisplayed] = useState("");
   const iRef = useRef(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);

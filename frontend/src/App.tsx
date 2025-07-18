@@ -14,7 +14,11 @@ import { useMinimumLoading } from "./useMinimumLoading";
 function App() {
   /* For loading animations */
   const isLoadingEntries = useAtomValue(isLoadingEntriesAtom);
-  const isLoadingAtLeast1Second = useMinimumLoading(isLoadingEntries, 1000);
+  const MINIMUM_LOADING_TIME = 1000;
+  const isLoadingAtLeast1Second = useMinimumLoading(
+    isLoadingEntries,
+    MINIMUM_LOADING_TIME,
+  );
 
   /* Current entry */
   const { currentEntry } = useEntries();
