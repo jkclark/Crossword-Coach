@@ -2,6 +2,7 @@ import { useAtomValue } from "jotai";
 import React from "react";
 
 import AnswerInput from "./components/AnswerInput";
+import ExplanationDisplay from "./components/ExplanationDisplay";
 import Navbar from "./components/Navbar";
 import ScoreDisplay from "./components/ScoreDisplay";
 import {
@@ -63,6 +64,12 @@ function App() {
           key={`${currentEntryPage}-${currentEntryIndex}`}
           answer={allEntries[currentEntryPage][currentEntryIndex].answer}
         />
+        <ExplanationDisplay
+          explanation={
+            allEntries[currentEntryPage][currentEntryIndex].explanation ||
+            "NO EXPLANATION"
+          }
+        />
       </div>
     ) : null;
 
@@ -84,7 +91,8 @@ function App() {
       <div className="flex w-full flex-row justify-end px-4 pt-2">
         <ScoreDisplay />
       </div>
-      <div className="container mx-auto flex flex-1 flex-col items-center justify-center text-center">
+      {/* Arbitrarily set the top margin to 20vh to put the content in the "middle top ish"*/}
+      <div className="container mx-auto mt-[20vh] flex flex-1 flex-col items-center text-center">
         {divToDisplay}
       </div>
     </div>
