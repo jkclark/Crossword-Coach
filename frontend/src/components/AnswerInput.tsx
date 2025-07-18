@@ -2,13 +2,16 @@ import { ArrowRightCircleIcon } from "@heroicons/react/24/outline";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useAtom, useAtomValue } from "jotai";
-import { displayExplanationAtom, revealedLettersAtom } from "../state";
+import { useAtomValue } from "jotai";
+import { revealedLettersAtom } from "../state";
 import { useEntries } from "../useEntries";
 import { useScore } from "../useScore";
 import AnswerInputSquare from "./AnswerInputSquare";
 
-const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
+const AnswerInput: React.FC<AnswerInputProps> = ({
+  answer,
+  showOrFetchExplanation,
+}) => {
   const { goToNextEntry } = useEntries();
 
   const [currentSquareIndex, setCurrentSquareIndex] = useState(0);
@@ -22,11 +25,6 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   /* Animation */
   const [jumpingIndexes, setJumpingIndexes] = useState<number[]>([]);
   const [isShaking, setIsShaking] = useState(false);
-
-  /* Explanation */
-  const [displayExplanation, setDisplayExplanation] = useAtom(
-    displayExplanationAtom,
-  );
 
   /* Derived state */
   const allLettersRevealed = revealedIndexes.length >= answer.length; // In theory should never be greater than
@@ -189,14 +187,12 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     // unmounting and remounting this component.
     /* Update the current entry index and page */
     goToNextEntry();
-    setDisplayExplanation(false);
   }, [
     allLettersRevealed,
     resetStreak,
     setStreak,
     setCorrectScore,
     setTotalScore,
-    setDisplayExplanation,
     goToNextEntry,
   ]);
 
@@ -355,10 +351,6 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     }
   };
 
-  function updateExplanation() {
-    setDisplayExplanation(true);
-  }
-
   return (
     <>
       <div
@@ -381,8 +373,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
         {allLettersRevealed ? (
           <button
             className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
-            onClick={updateExplanation}
-            disabled={displayExplanation}
+            onClick={showOrFetchExplanation}
           >
             I don't understand
           </button>
@@ -410,6 +401,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
 interface AnswerInputProps {
   answer: string;
+  showOrFetchExplanation: () => void;
 }
 
 export default AnswerInput;

@@ -25,4 +25,5 @@ export const correctScoreAtom = atom<number>(0);
 export const totalScoreAtom = atom<number>(0);
 export const streakAtom = atom<number>(0);
 
-export const displayExplanationAtom = atom<boolean>(false);
+export const explanationAtom = atom<string | null>(null);
+export const isExplanationLoadingAtom = atom<boolean>(false);

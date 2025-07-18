@@ -5,17 +5,26 @@ import AnswerInput from "./components/AnswerInput";
 import ExplanationDisplay from "./components/ExplanationDisplay";
 import Navbar from "./components/Navbar";
 import ScoreDisplay from "./components/ScoreDisplay";
-import { isLoadingEntriesAtom } from "./state";
+import { explanationAtom, isLoadingEntriesAtom } from "./state";
 import { useAutoUpdateEntries } from "./useAutoUpdateEntries";
 import { useEntries } from "./useEntries";
+import { useExplanation } from "./useExplanation";
 import { useMinimumLoading } from "./useMinimumLoading";
 
 function App() {
+  /* For loading animations */
   const isLoadingEntries = useAtomValue(isLoadingEntriesAtom);
+  const isLoadingAtLeast1Second = useMinimumLoading(isLoadingEntries, 1000);
+
+  /* Current entry */
   const { currentEntry } = useEntries();
+
+  /* Set up the useEffect's for automatically updating entries and progress */
   useAutoUpdateEntries();
 
-  const isLoadingAtLeast1Second = useMinimumLoading(isLoadingEntries, 1000);
+  /* Explanation */
+  const explanation = useAtomValue(explanationAtom);
+  const { showOrFetchExplanation } = useExplanation(currentEntry);
 
   /* On page load, before everything gets going, isLoadingAtLeast1Second will be false,
    * and allEntries will be empty. Without the `firstLoadDone` flag, we'd show the "no entries left"
@@ -52,10 +61,9 @@ function App() {
       <AnswerInput
         key={`${currentEntry.clue}-${currentEntry.answer}`}
         answer={currentEntry.answer}
+        showOrFetchExplanation={showOrFetchExplanation}
       />
-      <ExplanationDisplay
-        explanation={currentEntry.explanation || "NO EXPLANATION"}
-      />
+      <ExplanationDisplay explanation={explanation} />
     </div>
   ) : null;
 
@@ -63,6 +71,9 @@ function App() {
     <div className="text-4xl">There don't seem to be any clues left...</div>
   );
 
+  // TODO: There is a bug here where if you get to the point where it tries to load
+  // the next page of entries, even if there are entries left to play, it will show
+  // the loading and prevent you from playing.
   const divToDisplay = isLoadingAtLeast1Second
     ? loadingDiv
     : entryDisplayDiv
