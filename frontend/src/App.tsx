@@ -5,25 +5,22 @@ import AnswerInput from "./components/AnswerInput";
 import ExplanationDisplay from "./components/ExplanationDisplay";
 import Navbar from "./components/Navbar";
 import ScoreDisplay from "./components/ScoreDisplay";
-import {
-  currentEntryIndexAtom,
-  currentEntryPageAtom,
-  isLoadingEntriesAtom,
-} from "./state";
+import { isLoadingEntriesAtom } from "./state";
+import { useAutoUpdateEntries } from "./useAutoUpdateEntries";
 import { useEntries } from "./useEntries";
 import { useMinimumLoading } from "./useMinimumLoading";
 
 function App() {
-  const currentEntryIndex = useAtomValue(currentEntryIndexAtom);
-  const currentEntryPage = useAtomValue(currentEntryPageAtom);
   const isLoadingEntries = useAtomValue(isLoadingEntriesAtom);
-  const allEntries = useEntries();
+  const { currentEntry } = useEntries();
+  useAutoUpdateEntries();
 
   const isLoadingAtLeast1Second = useMinimumLoading(isLoadingEntries, 1000);
 
   /* On page load, before everything gets going, isLoadingAtLeast1Second will be false,
    * and allEntries will be empty. Without the `firstLoadDone` flag, we'd show the "no entries left"
    * div, which isn't what we want. This state allows us to show the loading div until the first load
+  );
    * is complete. Otherwise, if (not loading AND no entries), we'll show the "no more entries" display.
    */
   const [firstLoadDone, setFirstLoadDone] = React.useState(false);
@@ -47,31 +44,20 @@ function App() {
     </div>
   );
 
-  const entryDisplayDiv =
-    allEntries &&
-    currentEntryPage !== undefined &&
-    currentEntryPage >= 0 &&
-    Object.keys(allEntries).includes(currentEntryPage.toString()) &&
-    currentEntryIndex !== undefined &&
-    currentEntryIndex >= 0 &&
-    currentEntryIndex < allEntries[currentEntryPage].length ? (
-      <div>
-        <div className="mb-3 w-full text-[clamp(1rem,5vw,2.5rem)] break-words">
-          {allEntries[currentEntryPage][currentEntryIndex].clue} (
-          {allEntries[currentEntryPage][currentEntryIndex].answer.length})
-        </div>
-        <AnswerInput
-          key={`${currentEntryPage}-${currentEntryIndex}`}
-          answer={allEntries[currentEntryPage][currentEntryIndex].answer}
-        />
-        <ExplanationDisplay
-          explanation={
-            allEntries[currentEntryPage][currentEntryIndex].explanation ||
-            "NO EXPLANATION"
-          }
-        />
+  const entryDisplayDiv = currentEntry ? (
+    <div>
+      <div className="mb-3 w-full text-[clamp(1rem,5vw,2.5rem)] break-words">
+        {currentEntry.clue} ({currentEntry.answer.length})
       </div>
-    ) : null;
+      <AnswerInput
+        key={`${currentEntry.clue}-${currentEntry.answer}`}
+        answer={currentEntry.answer}
+      />
+      <ExplanationDisplay
+        explanation={currentEntry.explanation || "NO EXPLANATION"}
+      />
+    </div>
+  ) : null;
 
   const noEntriesLeftDiv = (
     <div className="text-4xl">There don't seem to be any clues left...</div>

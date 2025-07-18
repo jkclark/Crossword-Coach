@@ -3,22 +3,14 @@ import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAtom, useAtomValue } from "jotai";
-import {
-  currentEntryIndexAtom,
-  currentEntryPageAtom,
-  displayExplanationAtom,
-  getNextEntryIndexAndPage,
-  PAGE_SIZE,
-  revealedLettersAtom,
-} from "../state";
+import { displayExplanationAtom, revealedLettersAtom } from "../state";
+import { useEntries } from "../useEntries";
 import { useScore } from "../useScore";
 import AnswerInputSquare from "./AnswerInputSquare";
 
 const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
-  const [currentEntryIndex, setCurrentEntryIndex] = useAtom(
-    currentEntryIndexAtom,
-  );
-  const [currentEntryPage, setCurrentEntryPage] = useAtom(currentEntryPageAtom);
+  const { goToNextEntry } = useEntries();
+
   const [currentSquareIndex, setCurrentSquareIndex] = useState(0);
   const [userInput, setUserInput] = useState<string[]>(
     Array(answer.length).fill(""),
@@ -179,7 +171,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
   /**
    * Get ready for the next entry.
    */
-  const goToNextEntry = useCallback(() => {
+  const goNext = useCallback(() => {
     /* Update score and streak */
     if (allLettersRevealed) {
       resetStreak();
@@ -196,13 +188,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     // the parent component when the entry (and thus this component's key) changes,
     // unmounting and remounting this component.
     /* Update the current entry index and page */
-    const { nextIndex, nextPage } = getNextEntryIndexAndPage(
-      currentEntryIndex,
-      currentEntryPage,
-      PAGE_SIZE,
-    );
-    setCurrentEntryIndex(nextIndex);
-    setCurrentEntryPage(nextPage);
+    goToNextEntry();
     setDisplayExplanation(false);
   }, [
     allLettersRevealed,
@@ -210,11 +196,8 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     setStreak,
     setCorrectScore,
     setTotalScore,
-    currentEntryIndex,
-    currentEntryPage,
-    setCurrentEntryIndex,
-    setCurrentEntryPage,
     setDisplayExplanation,
+    goToNextEntry,
   ]);
 
   /**
@@ -234,7 +217,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       /* After animation, go to next entry */
       setTimeout(
         () => {
-          goToNextEntry();
+          goNext();
         },
         answerRef.current.length * delayBetweenJumps + 400,
       ); // Wait for all jumps to finish
@@ -244,7 +227,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
       // 400ms duration is defined in animate-shake in index.css
       setTimeout(() => setIsShaking(false), 400);
     }
-  }, [goToNextEntry]);
+  }, [goNext]);
 
   const revealAllLetters = useCallback(() => {
     /* If all letters are already revealed, do nothing */
@@ -265,9 +248,9 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
     if (!allLettersRevealed) {
       revealAllLetters();
     } else {
-      goToNextEntry();
+      goNext();
     }
-  }, [allLettersRevealed, revealAllLetters, goToNextEntry]);
+  }, [allLettersRevealed, revealAllLetters, goNext]);
 
   const submitAnswerOrGoNext = useCallback(() => {
     // If the user typed in an answer and they haven't given up yet, submit it
@@ -277,9 +260,9 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ answer }) => {
 
     // If the user already gave up, go to the next entry
     else if (allLettersRevealed) {
-      goToNextEntry();
+      goNext();
     }
-  }, [userInputIsFull, allLettersRevealed, submitAnswer, goToNextEntry]);
+  }, [userInputIsFull, allLettersRevealed, submitAnswer, goNext]);
 
   // Reveal initial letters based on revealedLetters
   useEffect(() => {
