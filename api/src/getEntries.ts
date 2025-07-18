@@ -1,15 +1,17 @@
-import { APIGatewayProxyEvent, Context, Handler } from "aws-lambda";
+import { APIGatewayProxyEventV2, Context, Handler } from "aws-lambda";
 
 import { Entry } from "common";
 import { GetEntriesOptions } from "storage";
 import { getDataStore } from "./connect";
 import { getCORSHeaders } from "./utils";
 
-export const handler: Handler = async (event: APIGatewayProxyEvent, context: Context) => {
-  if (event.httpMethod === "OPTIONS") {
+const ALLOWED_METHODS = "GET, OPTIONS";
+
+export const handler: Handler = async (event: APIGatewayProxyEventV2, context: Context) => {
+  if (event.requestContext.http.method === "OPTIONS") {
     return {
       statusCode: 204, // No Content for preflight requests
-      headers: getCORSHeaders(),
+      headers: getCORSHeaders(ALLOWED_METHODS),
       body: "",
     };
   }
@@ -21,7 +23,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent, context: Con
   if (!queryStringParameters) {
     return {
       statusCode: 400,
-      headers: getCORSHeaders(),
+      headers: getCORSHeaders(ALLOWED_METHODS),
       body: JSON.stringify({ error: "Missing query parameters" }),
     };
   }
@@ -49,13 +51,13 @@ export const handler: Handler = async (event: APIGatewayProxyEvent, context: Con
 
     return {
       statusCode: 200,
-      headers: getCORSHeaders(),
+      headers: getCORSHeaders(ALLOWED_METHODS),
       body: JSON.stringify({ entries: cluesAnswersAndExplanations }),
     };
   } catch (error) {
     return {
       statusCode: 400,
-      headers: getCORSHeaders(),
+      headers: getCORSHeaders(ALLOWED_METHODS),
       body: JSON.stringify({ error: (error as Error).message }),
     };
   }

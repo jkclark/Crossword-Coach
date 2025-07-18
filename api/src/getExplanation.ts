@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, Context, Handler } from "aws-lambda";
+import { APIGatewayProxyEventV2, Context, Handler } from "aws-lambda";
 import * as dotenv from "dotenv";
 import OpenAI from "openai";
 
@@ -7,11 +7,13 @@ import { getCORSHeaders } from "./utils";
 
 dotenv.config({ path: "../.env" });
 
-export const handler: Handler = async (event: APIGatewayProxyEvent, context: Context) => {
-  if (event.httpMethod === "OPTIONS") {
+const ALLOWED_METHODS = "POST, OPTIONS";
+
+export const handler: Handler = async (event: APIGatewayProxyEventV2, context: Context) => {
+  if (event.requestContext.http.method === "OPTIONS") {
     return {
       statusCode: 204, // No Content for preflight requests
-      headers: getCORSHeaders(),
+      headers: getCORSHeaders(ALLOWED_METHODS),
       body: "",
     };
   }
@@ -21,7 +23,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent, context: Con
   if (!clue || !answer) {
     return {
       statusCode: 400,
-      headers: getCORSHeaders(),
+      headers: getCORSHeaders(ALLOWED_METHODS),
       body: JSON.stringify({ error: "Missing clue or answer in request body" }),
     };
   }
@@ -38,12 +40,12 @@ export const handler: Handler = async (event: APIGatewayProxyEvent, context: Con
 
   return {
     statusCode: 200,
-    headers: getCORSHeaders(),
+    headers: getCORSHeaders(ALLOWED_METHODS),
     body: JSON.stringify({ explanation }),
   };
 };
 
-function getClueAndAnswer(event: APIGatewayProxyEvent): { clue: string; answer: string } {
+function getClueAndAnswer(event: APIGatewayProxyEventV2): { clue: string; answer: string } {
   const body = JSON.parse(event.body || "{}");
   const clue = body.clue;
   const answer = body.answer;
