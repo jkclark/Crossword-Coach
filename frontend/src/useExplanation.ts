@@ -13,6 +13,26 @@ export function useExplanation(currentEntry: Entry | null) {
     setExplanation(null);
   }, [currentEntry, setExplanation]);
 
+  const fetchExplanation = useCallback(
+    async (entry: Entry): Promise<string | null> => {
+      const url = getExplanationURL();
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: getHeadersForExplanationRequest(),
+          body: getBodyForExplanationRequest(entry),
+        });
+        const data = await response.json();
+        return data.explanation;
+      } catch (error) {
+        console.error("Error fetching explanation:", error);
+        return null;
+      }
+    },
+    [],
+  );
+
   const showOrFetchExplanation = useCallback(async () => {
     if (!currentEntry) return;
 
@@ -21,7 +41,7 @@ export function useExplanation(currentEntry: Entry | null) {
     if (currentEntry.explanation) {
       setExplanation(currentEntry.explanation);
     } else {
-      setExplanation("Here's the fetched explanation");
+      setExplanation(await fetchExplanation(currentEntry));
     }
 
     /* A short delay is required to ensure state is set to true
@@ -30,7 +50,21 @@ export function useExplanation(currentEntry: Entry | null) {
     setTimeout(() => {
       setIsExplanationLoading(false);
     }, 50);
-  }, [currentEntry, setExplanation, setIsExplanationLoading]);
+  }, [currentEntry, setExplanation, setIsExplanationLoading, fetchExplanation]);
+
+  function getExplanationURL() {
+    return `${import.meta.env.VITE_BASE_API_URL}/explain`;
+  }
+
+  function getHeadersForExplanationRequest() {
+    return {
+      "Content-Type": "application/json",
+    };
+  }
+
+  function getBodyForExplanationRequest(entry: Entry) {
+    return JSON.stringify({ clue: entry.clue, answer: entry.answer });
+  }
 
   return { showOrFetchExplanation };
 }
