@@ -17,17 +17,35 @@ const ExplanationDisplay: React.FC<ExplanationDisplayProps> = ({
     isExplanationLoading,
     MINIMUM_LOADING_TIME,
   );
-  // Only start typing after loading is done
+
+  /* Type out the explanation text like ChatGPT does */
   const TYPING_SPEED = 30; // ms per character
+  // Only start typing after loading is done
   const typedText = useTypedOutText(
     showLoading ? null : explanation,
     TYPING_SPEED,
   );
 
-  if (showLoading) {
-    return <div>Loading explanation…</div>;
+  if (!explanation && !showLoading) {
+    return null;
   }
-  return <div>{typedText}</div>;
+
+  const loadingDiv = (
+    <div className="flex h-full w-full flex-col items-center justify-center">
+      <div className="text-3xl">Understanding clue and answer...</div>
+      <div className="loading loading-dots text-primary loading-xl"></div>
+    </div>
+  );
+
+  const typedTextDiv = <div className="text-left text-xl">{typedText}</div>;
+
+  const innerDivToShow = showLoading ? loadingDiv : typedTextDiv;
+
+  return (
+    <div className="bg-base-200 mx-auto mt-3 h-50 w-[500px] rounded-xl p-3 text-left text-xl">
+      {innerDivToShow}
+    </div>
+  );
 };
 
 interface ExplanationDisplayProps {
