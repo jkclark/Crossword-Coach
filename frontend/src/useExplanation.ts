@@ -1,17 +1,22 @@
-import { useSetAtom } from "jotai";
-import { useCallback, useEffect } from "react";
+import { useAtom, useSetAtom } from "jotai";
+import { useCallback, useEffect, useRef } from "react";
 
 import type { Entry } from "@crosswordcoach/common";
 import { explanationAtom, isExplanationLoadingAtom } from "./state";
 
 export function useExplanation(currentEntry: Entry | null) {
   const setExplanation = useSetAtom(explanationAtom);
-  const setIsExplanationLoading = useSetAtom(isExplanationLoadingAtom);
+  const [isExplanationLoading, setIsExplanationLoading] = useAtom(
+    isExplanationLoadingAtom,
+  );
 
   /* Reset explanation when entry changes */
   useEffect(() => {
     setExplanation(null);
   }, [currentEntry, setExplanation]);
+
+  /* Track the most recent entry for which a fetch was initiated */
+  const lastFetchedEntryRef = useRef<Entry | null>(null);
 
   const fetchExplanation = useCallback(
     async (entry: Entry): Promise<string | null> => {
@@ -36,6 +41,18 @@ export function useExplanation(currentEntry: Entry | null) {
   const showOrFetchExplanation = useCallback(async () => {
     if (!currentEntry) return;
 
+    /* Prevent multiple fetches for the same entry */
+    if (
+      currentEntry.explanation ||
+      isExplanationLoading ||
+      (lastFetchedEntryRef.current &&
+        lastFetchedEntryRef.current.clue === currentEntry.clue &&
+        lastFetchedEntryRef.current.answer === currentEntry.answer)
+    ) {
+      return;
+    }
+
+    lastFetchedEntryRef.current = currentEntry;
     setIsExplanationLoading(true);
 
     if (currentEntry.explanation) {
@@ -50,7 +67,13 @@ export function useExplanation(currentEntry: Entry | null) {
     setTimeout(() => {
       setIsExplanationLoading(false);
     }, 50);
-  }, [currentEntry, setExplanation, setIsExplanationLoading, fetchExplanation]);
+  }, [
+    currentEntry,
+    setExplanation,
+    setIsExplanationLoading,
+    fetchExplanation,
+    isExplanationLoading,
+  ]);
 
   function getExplanationURL() {
     return `${import.meta.env.VITE_BASE_API_URL}/explain`;
