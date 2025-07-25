@@ -19,7 +19,7 @@ const ExplanationDisplay: React.FC<ExplanationDisplayProps> = ({
   );
 
   /* Type out the explanation text like ChatGPT does */
-  const TYPING_SPEED = 30; // ms per character
+  const TYPING_SPEED = 25; // ms per character
   // Only start typing after loading is done
   const typedText = useTypedOutText(
     showLoading ? null : explanation,
