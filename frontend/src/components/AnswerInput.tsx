@@ -26,6 +26,10 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
   const [jumpingIndexes, setJumpingIndexes] = useState<number[]>([]);
   const [isShaking, setIsShaking] = useState(false);
 
+  /* Explanation */
+  const [explanationButtonClicked, setExplanationButtonClicked] =
+    useState(false);
+
   /* Derived state */
   const allLettersRevealed = revealedIndexes.length >= answer.length; // In theory should never be greater than
   const userInputIsFull = userInput.every((char) => char !== "");
@@ -373,7 +377,11 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
         {allLettersRevealed ? (
           <button
             className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
-            onClick={showOrFetchExplanation}
+            onClick={() => {
+              setExplanationButtonClicked(true);
+              showOrFetchExplanation();
+            }}
+            disabled={explanationButtonClicked}
           >
             I don't understand
           </button>
