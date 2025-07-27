@@ -369,6 +369,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
             revealed={revealedIndexes.includes(idx)}
             jumping={jumpingIndexes.includes(idx)}
             className={`border-2 ${idx !== 0 ? "border-l-0" : ""}`}
+            onSelect={() => setCurrentSquareIndex(idx)}
           />
         ))}
       </div>

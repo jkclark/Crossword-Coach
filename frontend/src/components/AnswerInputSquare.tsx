@@ -7,22 +7,15 @@ const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({
   revealed,
   jumping,
   className,
+  onSelect,
 }) => {
   return (
     <div
-      className={`
-        flex items-center justify-center
-        text-4xl font-bold
-        border-secondary
-        aspect-square
-        w-[clamp(2.5rem,8vw,4rem)] h-[clamp(2.5rem,8vw,4rem)]
-        text-[clamp(1.5rem,5vw,3rem)]
-        select-none
-        ${selected && !revealed ? "bg-primary text-primary-content" : ""}
-        ${jumping ? "animate-jump" : ""}
-        ${revealed ? "bg-secondary text-secondary-content" : ""}
-        ${className}
-      `}
+      className={`border-secondary hover:bg-primary flex aspect-square h-[clamp(2.5rem,8vw,4rem)] w-[clamp(2.5rem,8vw,4rem)] items-center justify-center text-4xl text-[clamp(1.5rem,5vw,3rem)] font-bold transition-transform duration-150 ease-in-out select-none hover:scale-120 hover:border-3 ${selected && !revealed ? "bg-primary text-primary-content" : "bg-base-100"} ${jumping ? "animate-jump" : ""} ${revealed ? "bg-secondary text-secondary-content" : ""} ${className} `}
+      onClick={onSelect}
+      tabIndex={0}
+      role="button"
+      aria-label={revealed ? answer : value}
     >
       {revealed ? answer : value}
     </div>
@@ -36,6 +29,7 @@ interface AnswerInputSquareProps {
   revealed: boolean;
   jumping: boolean;
   className: string;
+  onSelect?: () => void;
 }
 
 export default AnswerInputSquare;
