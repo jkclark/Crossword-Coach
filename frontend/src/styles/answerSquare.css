@@ -1,0 +1,3 @@
+.answer-square {
+  @apply border-secondary aspect-square h-[clamp(2.5rem,8vw,4rem)] w-[clamp(2.5rem,8vw,4rem)];
+}

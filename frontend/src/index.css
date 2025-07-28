@@ -5,6 +5,8 @@
     business --prefersdark;
 }
 
+@import "./styles/answerSquare.css";
+
 /* To prevent everything from shifting to the left when opening the entry-filter modal */
 /* From https://github.com/saadeghi/daisyui/issues/3040#issuecomment-2131174823 */
 html {

@@ -11,7 +11,7 @@ const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({
 }) => {
   return (
     <div
-      className={`border-secondary hover:bg-primary flex aspect-square h-[clamp(2.5rem,8vw,4rem)] w-[clamp(2.5rem,8vw,4rem)] items-center justify-center text-4xl text-[clamp(1.5rem,5vw,3rem)] font-bold transition-transform duration-150 ease-in-out select-none hover:scale-120 hover:border-3 ${selected && !revealed ? "bg-primary text-primary-content" : "bg-base-100"} ${jumping ? "animate-jump" : ""} ${revealed ? "bg-secondary text-secondary-content" : ""} ${className} `}
+      className={`answer-square hover:bg-primary flex items-center justify-center text-4xl text-[clamp(1.5rem,5vw,3rem)] font-bold transition-transform duration-150 ease-in-out select-none hover:scale-120 hover:border-3 ${selected && !revealed ? "bg-primary text-primary-content" : "bg-base-100"} ${jumping ? "animate-jump" : ""} ${revealed ? "bg-secondary text-secondary-content" : ""} ${className} `}
       onClick={onSelect}
       tabIndex={0}
       role="button"
