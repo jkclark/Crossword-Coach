@@ -8,6 +8,8 @@ import {
   MINIMUM_ANSWER_LENGTH,
   revealedLettersAtom,
 } from "../state";
+import MiniAnswerDisplay from "./MiniAnswerDisplay";
+import NumberStepper from "./NumberStepper";
 
 const EntryFilter: React.FC = () => {
   const setEntryFilterOptions = useSetAtom(entryFilterOptionsAtom);
@@ -175,93 +177,43 @@ const EntryFilter: React.FC = () => {
         <div className="modal-box max-w-3xl">
           <h1 className="mb-4 text-2xl font-bold">Filter</h1>
 
-          <h2 className="mb-2 text-lg">
-            Answer length (TODO: add a little "i" icon that's hoverable)
-          </h2>
-          <div className="relative mb-2 flex w-full">
-            <div className="mr-3 flex w-[3ch] flex-col justify-between">
-              <div>min</div>
-              <div>max</div>
-            </div>
-            <div className="flex flex-1 flex-col">
-              <input
-                type="range"
-                min={MINIMUM_ANSWER_LENGTH}
-                max={MAXIMUM_ANSWER_LENGTH}
-                step={1}
+          <h2 className="mb-2 text-lg">Answer settings</h2>
+          <div className="relative mb-2 flex w-full justify-between">
+            <div className="flex max-w-1/3 flex-1 basis-1/3 flex-col items-center">
+              <div>Min</div>
+              <NumberStepper
                 value={answerLengthMin}
-                onChange={(e) => updateAnswerLengthMin(Number(e.target.value))}
-                className="range range-primary w-full rounded-full"
+                incrementEnabled={true}
+                onIncrement={() => updateAnswerLengthMin(answerLengthMin + 1)}
+                decrementEnabled={true}
+                onDecrement={() => updateAnswerLengthMin(answerLengthMin - 1)}
               />
-              <div className="mt-2 flex justify-between px-2.5 text-xs">
-                {Array.from({
-                  length: MAXIMUM_ANSWER_LENGTH - MINIMUM_ANSWER_LENGTH + 1,
-                }).map((_, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      display: "inline-flex",
-                      width: "2ch", // 2 characters wide, enough for 2 digits
-                      justifyContent: "center",
-                      alignItems: "center",
-                      fontVariantNumeric: "tabular-nums",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    {i + MINIMUM_ANSWER_LENGTH}
-                  </span>
-                ))}
-              </div>
-              <input
-                type="range"
-                min={MINIMUM_ANSWER_LENGTH}
-                max={MAXIMUM_ANSWER_LENGTH}
-                step={1}
+              <MiniAnswerDisplay length={answerLengthMin} />
+            </div>
+            <div className="flex max-w-1/3 flex-1 basis-1/3 flex-col items-center">
+              <div>Max</div>
+              <NumberStepper
                 value={answerLengthMax}
-                onChange={(e) => updateAnswerLengthMax(Number(e.target.value))}
-                className="range range-primary mt-2 w-full rounded-full"
+                incrementEnabled={true}
+                onIncrement={() => updateAnswerLengthMax(answerLengthMax + 1)}
+                decrementEnabled={true}
+                onDecrement={() => updateAnswerLengthMax(answerLengthMax - 1)}
               />
+              <MiniAnswerDisplay length={answerLengthMax} />
             </div>
-          </div>
-
-          <br />
-
-          <h2 className="mb-2 text-lg">
-            Prefilled squares (TODO: add a little "i" icon that's hoverable)
-          </h2>
-          <div className="relative mb-2 flex w-full">
-            <div className="mr-3 flex w-[3ch] flex-col justify-between">
-              <div>set</div>
-            </div>
-            <div className="flex flex-1 flex-col">
-              <input
-                type="range"
-                min={0}
-                max={MAXIMUM_ANSWER_LENGTH - 1}
-                step={1}
+            <div className="flex max-w-1/3 flex-1 basis-1/3 flex-col items-center">
+              <div>Prefilled</div>
+              <NumberStepper
                 value={revealedLetters}
-                onChange={(e) => updateRevealedLetters(Number(e.target.value))}
-                className="range range-primary w-full rounded-full"
+                incrementEnabled={revealedLetters < answerLengthMin - 1}
+                onIncrement={() => updateRevealedLetters(revealedLetters + 1)}
+                decrementEnabled={revealedLetters > 0}
+                onDecrement={() => updateRevealedLetters(revealedLetters - 1)}
               />
-              <div className="mt-2 flex justify-between px-2.5 text-xs">
-                {Array.from({
-                  length: MAXIMUM_ANSWER_LENGTH,
-                }).map((_, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      display: "inline-flex",
-                      width: "2ch", // 2 characters wide, enough for 2 digits
-                      justifyContent: "center",
-                      alignItems: "center",
-                      fontVariantNumeric: "tabular-nums",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    {i}
-                  </span>
-                ))}
-              </div>
+              <MiniAnswerDisplay
+                length={revealedLetters + 1}
+                revealedIndexes={[...Array(revealedLetters).keys()]}
+              />
             </div>
           </div>
 
