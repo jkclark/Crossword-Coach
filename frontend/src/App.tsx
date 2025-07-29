@@ -75,14 +75,18 @@ function App() {
     <div className="text-4xl">There don't seem to be any clues left...</div>
   );
 
-  // TODO: There is a bug here where if you get to the point where it tries to load
-  // the next page of entries, even if there are entries left to play, it will show
-  // the loading and prevent you from playing.
-  const divToDisplay = isLoadingAtLeast1Second
+  /**
+   * Priority of divs:
+   * 1. First load? Loading div
+   * 2. Entries? Entry display div
+   * 3. Loading entries? Loading div
+   * 4. No entries left
+   */
+  const divToDisplay = !firstLoadDone
     ? loadingDiv
     : entryDisplayDiv
       ? entryDisplayDiv
-      : !firstLoadDone
+      : isLoadingAtLeast1Second
         ? loadingDiv
         : noEntriesLeftDiv;
 
