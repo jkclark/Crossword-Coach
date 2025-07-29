@@ -2,7 +2,7 @@ import AnswerInputSquare from "./AnswerInputSquare";
 
 const MiniAnswerDisplay: React.FC<MiniAnswerDisplayProps> = ({
   length,
-  revealedIndexes,
+  values,
 }) => {
   const squarePropsBase = {
     value: "",
@@ -19,7 +19,8 @@ const MiniAnswerDisplay: React.FC<MiniAnswerDisplayProps> = ({
           {...squarePropsBase}
           key={idx}
           className={`settings-mini-answer-square ${idx !== 0 ? "border-l-0" : ""}`}
-          revealed={(revealedIndexes && revealedIndexes.includes(idx)) || false}
+          answer={values ? values[idx] : ""}
+          revealed={(values && !!values[idx]) || false}
         />
       ))}
     </div>
@@ -28,7 +29,7 @@ const MiniAnswerDisplay: React.FC<MiniAnswerDisplayProps> = ({
 
 interface MiniAnswerDisplayProps {
   length: number;
-  revealedIndexes?: number[];
+  values?: string[];
 }
 
 export default MiniAnswerDisplay;

@@ -12,7 +12,7 @@ const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({
 }) => {
   return (
     <div
-      className={`border-secondary flex aspect-square items-center justify-center border-2 text-4xl text-[clamp(1.5rem,5vw,3rem)] font-bold transition-transform duration-150 ease-in-out select-none ${hoverable ? "hover:bg-primary hover:scale-120 hover:border-3" : ""} ${selected && !revealed ? "bg-primary text-primary-content" : "bg-base-100"} ${jumping ? "animate-jump" : ""} ${revealed ? "bg-secondary text-secondary-content" : ""} ${className} `}
+      className={`border-secondary flex aspect-square items-center justify-center border-2 font-bold transition-transform duration-150 ease-in-out select-none ${hoverable ? "hover:bg-primary hover:scale-120 hover:border-3" : ""} ${selected && !revealed ? "bg-primary text-primary-content" : "bg-base-100"} ${jumping ? "animate-jump" : ""} ${revealed ? "bg-secondary text-secondary-content" : ""} ${className} `}
       onClick={onSelect}
       tabIndex={0}
       role="button"

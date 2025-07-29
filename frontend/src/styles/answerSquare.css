@@ -1,7 +1,7 @@
 .main-input-answer-square {
-  @apply h-[clamp(2.5rem,8vw,4rem)] w-[clamp(2.5rem,8vw,4rem)];
+  @apply h-[clamp(2.5rem,8vw,4rem)] w-[clamp(2.5rem,8vw,4rem)] text-[clamp(1.5rem,5vw,3rem)];
 }
 
 .settings-mini-answer-square {
-  @apply h-[clamp(1.5rem,5vw,2rem)] w-[clamp(1.5rem,5vw,2rem)];
+  @apply h-[clamp(1.5rem,5vw,2rem)] w-[clamp(1.5rem,5vw,2rem)] text-[clamp(1rem,3vw,1.5rem)];
 }

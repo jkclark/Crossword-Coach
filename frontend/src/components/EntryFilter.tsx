@@ -168,6 +168,8 @@ const EntryFilter: React.FC = () => {
     closeModal(); // Close and blur after applying
   };
 
+  const PREFILLED_LETTERS_DISPLAY = "ABCDEFGHIJKLMN";
+
   return (
     <>
       <button className="btn" onClick={openModal} ref={settingsButtonRef}>
@@ -178,42 +180,59 @@ const EntryFilter: React.FC = () => {
           <h1 className="mb-4 text-2xl font-bold">Filter</h1>
 
           <h2 className="mb-2 text-lg">Answer settings</h2>
-          <div className="relative mb-2 flex w-full justify-between">
-            <div className="flex max-w-1/3 flex-1 basis-1/3 flex-col items-center">
-              <div>Min</div>
-              <NumberStepper
-                value={answerLengthMin}
-                incrementEnabled={true}
-                onIncrement={() => updateAnswerLengthMin(answerLengthMin + 1)}
-                decrementEnabled={true}
-                onDecrement={() => updateAnswerLengthMin(answerLengthMin - 1)}
-              />
-              <MiniAnswerDisplay length={answerLengthMin} />
+          <div className="relative mb-2 flex w-full flex-col gap-5">
+            <div className="flex flex-row gap-5">
+              <div className="flex flex-col items-center">
+                <div>Min</div>
+                <NumberStepper
+                  value={answerLengthMin}
+                  incrementEnabled={answerLengthMin < MAXIMUM_ANSWER_LENGTH}
+                  onIncrement={() => updateAnswerLengthMin(answerLengthMin + 1)}
+                  decrementEnabled={answerLengthMin > MINIMUM_ANSWER_LENGTH}
+                  onDecrement={() => updateAnswerLengthMin(answerLengthMin - 1)}
+                />
+              </div>
+              <div className="my-auto">
+                <MiniAnswerDisplay length={answerLengthMin} />
+              </div>
             </div>
-            <div className="flex max-w-1/3 flex-1 basis-1/3 flex-col items-center">
-              <div>Max</div>
-              <NumberStepper
-                value={answerLengthMax}
-                incrementEnabled={true}
-                onIncrement={() => updateAnswerLengthMax(answerLengthMax + 1)}
-                decrementEnabled={true}
-                onDecrement={() => updateAnswerLengthMax(answerLengthMax - 1)}
-              />
-              <MiniAnswerDisplay length={answerLengthMax} />
+
+            <div className="flex flex-row gap-5">
+              <div className="flex flex-col items-center">
+                <div>Max</div>
+                <NumberStepper
+                  value={answerLengthMax}
+                  incrementEnabled={answerLengthMax < MAXIMUM_ANSWER_LENGTH}
+                  onIncrement={() => updateAnswerLengthMax(answerLengthMax + 1)}
+                  decrementEnabled={answerLengthMax > MINIMUM_ANSWER_LENGTH}
+                  onDecrement={() => updateAnswerLengthMax(answerLengthMax - 1)}
+                />
+              </div>
+              <div className="my-auto">
+                <MiniAnswerDisplay length={answerLengthMax} />
+              </div>
             </div>
-            <div className="flex max-w-1/3 flex-1 basis-1/3 flex-col items-center">
-              <div>Prefilled</div>
-              <NumberStepper
-                value={revealedLetters}
-                incrementEnabled={revealedLetters < answerLengthMin - 1}
-                onIncrement={() => updateRevealedLetters(revealedLetters + 1)}
-                decrementEnabled={revealedLetters > 0}
-                onDecrement={() => updateRevealedLetters(revealedLetters - 1)}
-              />
-              <MiniAnswerDisplay
-                length={revealedLetters + 1}
-                revealedIndexes={[...Array(revealedLetters).keys()]}
-              />
+
+            <div className="flex flex-row gap-5">
+              <div className="flex flex-col items-center">
+                <div>Prefilled</div>
+                <NumberStepper
+                  value={revealedLetters}
+                  incrementEnabled={revealedLetters < answerLengthMin - 1}
+                  onIncrement={() => updateRevealedLetters(revealedLetters + 1)}
+                  decrementEnabled={revealedLetters > 0}
+                  onDecrement={() => updateRevealedLetters(revealedLetters - 1)}
+                />
+              </div>
+              <div className="my-auto">
+                <MiniAnswerDisplay
+                  length={answerLengthMin}
+                  values={PREFILLED_LETTERS_DISPLAY.split("").slice(
+                    0,
+                    revealedLetters,
+                  )}
+                />
+              </div>
             </div>
           </div>
 
