@@ -91,13 +91,13 @@ function App() {
         : noEntriesLeftDiv;
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex h-screen flex-col">
       <Navbar />
-      <div className="flex w-full flex-row justify-end px-4 pt-2">
+      <div className="mt-2 mb-10 flex h-[20%] w-full flex-row items-end justify-end">
         <ScoreDisplay />
       </div>
       {/* Arbitrarily set the top margin to 20vh to put the content in the "middle top ish"*/}
-      <div className="container mx-auto mt-[20vh] flex flex-1 flex-col items-center text-center">
+      <div className="container mx-auto flex flex-col items-center text-center">
         {divToDisplay}
       </div>
     </div>
