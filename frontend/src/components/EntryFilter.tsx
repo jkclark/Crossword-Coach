@@ -176,110 +176,124 @@ const EntryFilter: React.FC = () => {
         Settings
       </button>
       <dialog id="my_modal_1" className="modal" ref={dialogRef}>
-        <div className="modal-box max-w-3xl">
-          <h1 className="mb-4 text-2xl font-bold">Filter</h1>
+        <div className="modal-box max-w-3xl select-none">
+          <h1 className="mb-3 text-2xl font-bold">Settings</h1>
 
-          <h2 className="mb-2 text-lg">Answer settings</h2>
-          <div className="relative mb-2 flex w-full flex-col gap-5">
-            <div className="flex flex-row gap-5">
-              <div className="flex flex-col items-center">
-                <div>Min</div>
-                <NumberStepper
-                  value={answerLengthMin}
-                  incrementEnabled={answerLengthMin < MAXIMUM_ANSWER_LENGTH}
-                  onIncrement={() => updateAnswerLengthMin(answerLengthMin + 1)}
-                  decrementEnabled={answerLengthMin > MINIMUM_ANSWER_LENGTH}
-                  onDecrement={() => updateAnswerLengthMin(answerLengthMin - 1)}
-                />
+          <div>
+            <h2 className="mb-1 text-lg font-semibold">Answer length</h2>
+            <div className="relative mb-2 flex w-full flex-col gap-5">
+              <div className="flex flex-row gap-5">
+                <div className="flex flex-col items-center">
+                  <div className="text-lg">Min</div>
+                  <NumberStepper
+                    value={answerLengthMin}
+                    incrementEnabled={answerLengthMin < MAXIMUM_ANSWER_LENGTH}
+                    onIncrement={() =>
+                      updateAnswerLengthMin(answerLengthMin + 1)
+                    }
+                    decrementEnabled={answerLengthMin > MINIMUM_ANSWER_LENGTH}
+                    onDecrement={() =>
+                      updateAnswerLengthMin(answerLengthMin - 1)
+                    }
+                  />
+                </div>
+                <div className="my-auto">
+                  <MiniAnswerDisplay
+                    length={answerLengthMin}
+                    values={PREFILLED_LETTERS_DISPLAY.split("").slice(
+                      0,
+                      revealedLetters,
+                    )}
+                  />
+                </div>
               </div>
-              <div className="my-auto">
-                <MiniAnswerDisplay length={answerLengthMin} />
-              </div>
-            </div>
 
-            <div className="flex flex-row gap-5">
-              <div className="flex flex-col items-center">
-                <div>Max</div>
-                <NumberStepper
-                  value={answerLengthMax}
-                  incrementEnabled={answerLengthMax < MAXIMUM_ANSWER_LENGTH}
-                  onIncrement={() => updateAnswerLengthMax(answerLengthMax + 1)}
-                  decrementEnabled={answerLengthMax > MINIMUM_ANSWER_LENGTH}
-                  onDecrement={() => updateAnswerLengthMax(answerLengthMax - 1)}
-                />
-              </div>
-              <div className="my-auto">
-                <MiniAnswerDisplay length={answerLengthMax} />
-              </div>
-            </div>
-
-            <div className="flex flex-row gap-5">
-              <div className="flex flex-col items-center">
-                <div>Prefilled</div>
-                <NumberStepper
-                  value={revealedLetters}
-                  incrementEnabled={revealedLetters < answerLengthMin - 1}
-                  onIncrement={() => updateRevealedLetters(revealedLetters + 1)}
-                  decrementEnabled={revealedLetters > 0}
-                  onDecrement={() => updateRevealedLetters(revealedLetters - 1)}
-                />
-              </div>
-              <div className="my-auto">
-                <MiniAnswerDisplay
-                  length={answerLengthMin}
-                  values={PREFILLED_LETTERS_DISPLAY.split("").slice(
-                    0,
-                    revealedLetters,
-                  )}
-                />
+              <div className="flex flex-row gap-5">
+                <div className="flex flex-col items-center">
+                  <div className="text-lg">Max</div>
+                  <NumberStepper
+                    value={answerLengthMax}
+                    incrementEnabled={answerLengthMax < MAXIMUM_ANSWER_LENGTH}
+                    onIncrement={() =>
+                      updateAnswerLengthMax(answerLengthMax + 1)
+                    }
+                    decrementEnabled={answerLengthMax > MINIMUM_ANSWER_LENGTH}
+                    onDecrement={() =>
+                      updateAnswerLengthMax(answerLengthMax - 1)
+                    }
+                  />
+                </div>
+                <div className="my-auto">
+                  <MiniAnswerDisplay
+                    length={answerLengthMax}
+                    values={PREFILLED_LETTERS_DISPLAY.split("").slice(
+                      0,
+                      revealedLetters,
+                    )}
+                  />
+                </div>
               </div>
             </div>
           </div>
 
-          <br />
-
-          <h2 className="mb-2 text-lg">Publication</h2>
-          <form className="flex flex-row gap-y-1 filter">
-            <input
-              className="btn btn-square"
-              type="reset"
-              value="×"
-              onClick={() => setSource(null)}
+          <div className="mb-5 flex w-full flex-col items-center">
+            <div>Prefilled</div>
+            <NumberStepper
+              value={revealedLetters}
+              incrementEnabled={revealedLetters < answerLengthMin - 1}
+              onIncrement={() => updateRevealedLetters(revealedLetters + 1)}
+              decrementEnabled={revealedLetters > 0}
+              onDecrement={() => updateRevealedLetters(revealedLetters - 1)}
             />
-            {SOURCES.map((source, index) => (
-              <input
-                key={index}
-                className={`btn ${selectedSource === source.shortName ? "btn-primary" : ""}`}
-                type="radio"
-                name="sources"
-                aria-label={source.name}
-                onClick={() => setSource(source.shortName)}
-              />
-            ))}
-          </form>
+          </div>
 
-          <br />
-
-          <h2 className="bold mb-2 text-lg">Day of the week</h2>
-          <form ref={dayOfWeekFormRef} className="flex flex-row gap-y-1 filter">
-            <input
-              className="btn btn-square"
-              type="reset"
-              value="×"
-              onClick={() => setSelectedDayOfWeek(null)}
-            />
-            {DAYS_OF_WEEK.map((day, index) => (
+          <div className="mb-5">
+            <h2 className="mb-1 text-lg font-semibold">Publication</h2>
+            <form className="flex flex-row gap-y-1 filter">
               <input
-                key={index}
-                className={`btn ${selectedDayOfWeek === index ? "btn-primary" : ""}`}
-                type="radio"
-                name="daysOfWeek"
-                aria-label={day}
-                onClick={() => setDayOfWeek(index)}
-                disabled={!selectedSource}
+                className="btn btn-square"
+                type="reset"
+                value="×"
+                onClick={() => setSource(null)}
               />
-            ))}
-          </form>
+              {SOURCES.map((source, index) => (
+                <input
+                  key={index}
+                  className={`btn ${selectedSource === source.shortName ? "btn-primary" : ""}`}
+                  type="radio"
+                  name="sources"
+                  aria-label={source.name}
+                  onClick={() => setSource(source.shortName)}
+                />
+              ))}
+            </form>
+          </div>
+
+          <div>
+            <h2 className="mb-1 text-lg font-semibold">Day of the week</h2>
+            <form
+              ref={dayOfWeekFormRef}
+              className="flex flex-row gap-y-1 filter"
+            >
+              <input
+                className="btn btn-square"
+                type="reset"
+                value="×"
+                onClick={() => setSelectedDayOfWeek(null)}
+              />
+              {DAYS_OF_WEEK.map((day, index) => (
+                <input
+                  key={index}
+                  className={`btn ${selectedDayOfWeek === index ? "btn-primary" : ""}`}
+                  type="radio"
+                  name="daysOfWeek"
+                  aria-label={day}
+                  onClick={() => setDayOfWeek(index)}
+                  disabled={!selectedSource}
+                />
+              ))}
+            </form>
+          </div>
 
           <div className="modal-action">
             <form method="dialog">
