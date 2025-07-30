@@ -1,4 +1,4 @@
-import { MinusCircleIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import type React from "react";
 
 const NumberStepper: React.FC<NumberStepperProps> = ({
@@ -17,16 +17,16 @@ const NumberStepper: React.FC<NumberStepperProps> = ({
         aria-label="Decrement"
         disabled={!decrementEnabled}
       >
-        <MinusCircleIcon className="size-5" />
+        <ChevronDownIcon className="size-5" />
       </button>
-      <span className="mx-2 w-6 text-center text-lg">{value}</span>
+      <span className="mx-2 w-6 text-center text-lg select-none">{value}</span>
       <button
         className="btn btn-square btn-xs"
         onClick={onIncrement}
         aria-label="Increment"
         disabled={!incrementEnabled}
       >
-        <PlusCircleIcon className="size-5" />
+        <ChevronUpIcon className="size-5" />
       </button>
     </div>
   );
