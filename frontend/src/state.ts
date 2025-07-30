@@ -19,7 +19,7 @@ export const MINIMUM_ANSWER_LENGTH = 3;
 export const MAXIMUM_ANSWER_LENGTH = 15;
 export const answerLengthMinAtom = atom<number>(MINIMUM_ANSWER_LENGTH);
 export const answerLengthMaxAtom = atom<number>(MAXIMUM_ANSWER_LENGTH);
-export const revealedLettersAtom = atom<number>(0);
+export const revealedLettersAtom = atom<number>(2);
 
 export const correctScoreAtom = atom<number>(0);
 export const totalScoreAtom = atom<number>(0);
