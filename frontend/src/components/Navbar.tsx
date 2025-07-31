@@ -6,7 +6,9 @@ const Navbar: React.FC = () => {
   return (
     <div className="navbar bg-base-100 shadow-sm">
       <div className="navbar-start">
-        <a className="btn btn-ghost text-xl">Crossword Coach</a>
+        <div className="btn btn-ghost pointer-events-none text-xl">
+          Crossword Coach
+        </div>
       </div>
       <div className="navbar-end">
         <div className="flex gap-2">
