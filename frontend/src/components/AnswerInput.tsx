@@ -389,7 +389,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
           </button>
         ) : (
           <button
-            className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
+            className="btn hover:text-error py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
             onClick={revealAllLetters}
             disabled={allLettersRevealed}
           >
