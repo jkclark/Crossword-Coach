@@ -6,9 +6,7 @@ const ScoreDisplay: React.FC = () => {
 
   let displayAccuracy = "-";
   if (accuracy !== null) {
-    displayAccuracy = Number.isInteger(accuracy)
-      ? accuracy.toString() + "%"
-      : accuracy.toFixed(2) + "%";
+    displayAccuracy = Math.round(accuracy) + "%";
   }
 
   const stats = [
