@@ -4,7 +4,7 @@ import ThemeToggle from "./ThemeToggle";
 
 const Navbar: React.FC = () => {
   return (
-    <div className="navbar bg-base-100 shadow-sm">
+    <div className="navbar bg-base-100">
       <div className="navbar-start">
         <div className="btn btn-ghost pointer-events-none text-xl">
           Crossword Coach
