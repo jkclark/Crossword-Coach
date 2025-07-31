@@ -1,0 +1,50 @@
+.slide-container {
+  transition:
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.4s;
+  will-change: transform, opacity;
+}
+
+.slide-in {
+  transform: translateX(100vw);
+  opacity: 0;
+  animation: slideInAnim 0.4s forwards;
+}
+
+.slide-in-done {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.slide-out {
+  transform: translateX(0);
+  opacity: 1;
+  animation: slideOutAnim 0.4s forwards;
+}
+
+.slide-out-done {
+  transform: translateX(-100vw);
+  opacity: 0;
+}
+
+@keyframes slideInAnim {
+  from {
+    transform: translateX(100vw);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutAnim {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100vw);
+    opacity: 0;
+  }
+}

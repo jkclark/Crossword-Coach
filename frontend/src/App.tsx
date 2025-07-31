@@ -1,5 +1,5 @@
 import { useAtomValue } from "jotai";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import AnswerInput from "./components/AnswerInput";
 import ExplanationDisplay from "./components/ExplanationDisplay";
@@ -49,6 +49,71 @@ function App() {
     prevLoadingRef.current = isLoadingAtLeast1Second;
   }, [isLoadingAtLeast1Second, firstLoadDone]);
 
+  // Animation state for sliding
+  const [displayedEntry, setDisplayedEntry] = useState(currentEntry);
+  const [animating, setAnimating] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<"in" | "out" | null>(
+    null,
+  );
+  const prevEntryKey = useRef<string | null>(null);
+
+  /*** Sliding code below ***/
+
+  /* Helper to get a unique key for the entry */
+  const getEntryKey = (entry: typeof currentEntry) =>
+    entry ? `${entry.clue}-${entry.answer}` : "";
+
+  const SLIDE_DURATION = 400;
+
+  /* When currentEntry changes, trigger slide out, then update, then slide in */
+  useEffect(() => {
+    const newKey = getEntryKey(currentEntry);
+
+    /* First render */
+    if (prevEntryKey.current === null) {
+      setDisplayedEntry(currentEntry);
+      setSlideDirection("in");
+      setAnimating(false);
+      prevEntryKey.current = newKey;
+      return;
+    }
+
+    /* Every other render */
+    if (newKey !== prevEntryKey.current) {
+      // Initiate slide out
+      setSlideDirection("out");
+      setAnimating(true);
+
+      // After slide out, update entry and slide in
+      const timeout = setTimeout(() => {
+        setDisplayedEntry(currentEntry);
+        setSlideDirection("in");
+        setAnimating(true);
+
+        prevEntryKey.current = newKey;
+
+        // After slide in, stop animating
+        setTimeout(() => {
+          setAnimating(false);
+        }, SLIDE_DURATION);
+      }, SLIDE_DURATION); // match CSS duration
+      return () => clearTimeout(timeout);
+    }
+
+    // eslint-disable-next-line
+  }, [currentEntry]);
+
+  /* CSS classes for sliding animation */
+  const getSlideClass = () => {
+    if (!animating && slideDirection === "in") return "slide-in-done";
+    if (!animating && slideDirection === "out") return "slide-out-done";
+    if (animating && slideDirection === "in") return "slide-in";
+    if (animating && slideDirection === "out") return "slide-out";
+    return "";
+  };
+
+  /*** Sliding code above ***/
+
   /* Divs to display based on loading state and entries */
   const loadingDiv = (
     <div>
@@ -57,14 +122,17 @@ function App() {
     </div>
   );
 
-  const entryDisplayDiv = currentEntry ? (
-    <div>
+  const entryDisplayDiv = displayedEntry ? (
+    <div
+      className={`slide-container ${getSlideClass()}`}
+      key={getEntryKey(displayedEntry)}
+    >
       <div className="mb-3 w-full text-[clamp(1rem,5vw,2.5rem)] break-words">
-        {currentEntry.clue} ({currentEntry.answer.length})
+        {displayedEntry.clue} ({displayedEntry.answer.length})
       </div>
       <AnswerInput
-        key={`${currentEntry.clue}-${currentEntry.answer}`}
-        answer={currentEntry.answer}
+        key={`${displayedEntry.clue}-${displayedEntry.answer}`}
+        answer={displayedEntry.answer}
         showOrFetchExplanation={showOrFetchExplanation}
       />
       <ExplanationDisplay explanation={explanation} />
@@ -97,7 +165,7 @@ function App() {
         <ScoreDisplay />
       </div>
       {/* Arbitrarily set the top margin to 20vh to put the content in the "middle top ish"*/}
-      <div className="container mx-auto flex flex-col items-center text-center">
+      <div className="container mx-auto flex flex-col items-center overflow-hidden text-center">
         {divToDisplay}
       </div>
     </div>
