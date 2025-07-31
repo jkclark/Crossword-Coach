@@ -10,9 +10,49 @@ const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({
   className,
   onSelect,
 }) => {
+  const classNames = [
+    "border-secondary",
+    "flex",
+    "aspect-square",
+    "items-center",
+    "justify-center",
+    "border-2",
+    "font-bold",
+    "transition-transform",
+    "duration-150",
+    "ease-in-out",
+    "select-none",
+    "bg-base-100",
+  ];
+
+  /* Hoverable? */
+  if (hoverable) {
+    classNames.push("hover:bg-primary", "hover:scale-120", "hover:border-3");
+  }
+
+  /* Revealed? */
+  if (revealed) {
+    classNames.push("text-base-content");
+  } else {
+    classNames.push("text-secondary");
+    if (selected) {
+      classNames.push("bg-primary text-primary-content");
+    }
+  }
+
+  /* Jumping */
+  if (jumping) {
+    classNames.push("animate-jump");
+  }
+
+  /* Custom className */
+  if (className) {
+    classNames.push(className);
+  }
+
   return (
     <div
-      className={`border-secondary flex aspect-square items-center justify-center border-2 font-bold transition-transform duration-150 ease-in-out select-none ${hoverable ? "hover:bg-primary hover:scale-120 hover:border-3" : ""} ${selected && !revealed ? "bg-primary text-primary-content" : "bg-base-100"} ${jumping ? "animate-jump" : ""} ${revealed ? "bg-secondary text-secondary-content hover:bg-secondary" : ""} ${className} `}
+      className={classNames.join(" ")}
       onClick={onSelect}
       tabIndex={0}
       role="button"
