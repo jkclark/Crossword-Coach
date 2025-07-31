@@ -27,7 +27,11 @@ const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({
 
   /* Hoverable? */
   if (hoverable) {
-    classNames.push("hover:bg-primary", "hover:scale-120", "hover:border-3");
+    classNames.push("hover:scale-120", "hover:border-3");
+
+    if (!revealed) {
+      classNames.push("hover:bg-primary");
+    }
   }
 
   /* Revealed? */
