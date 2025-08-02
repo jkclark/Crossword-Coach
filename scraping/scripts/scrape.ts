@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 
-import { CrosswordPuzzle } from "../../common/src/interfaces/CrosswordPuzzle";
+import { CrosswordPuzzle, Entry } from "../../common/src/interfaces/CrosswordPuzzle";
 import { DataStore } from "../../storage/src/DataStore";
 import FileDataStore from "../../storage/src/data-stores/FileDataStore";
 
@@ -12,6 +12,8 @@ import CrosswordPuzzleSource, {
 } from "../src/crosswordPuzzleSource";
 
 dotenv.config({ path: "./.env" });
+
+type EntryFilter = (entry: Entry) => boolean;
 
 async function mainPreFetchURLs(cwpSource: CrosswordPuzzleSourcePreFetchURLs, dataStore: DataStore) {
   console.log("Scraping started");
@@ -45,35 +47,34 @@ async function filterAndStorePuzzle(
   dataStore: DataStore,
   puzzle: CrosswordPuzzle
 ) {
-  // Filter theme clues
+  /* Filter theme clues */
   const puzzleNoThemeClues = cwpSource.filterThemeClues(puzzle);
 
-  // Filter clues that reference other clues
-  const puzzleNoCluesReferencingOtherClues = filterCluesThatReferenceOtherClues(puzzleNoThemeClues);
+  /* Filter invalid clues */
+  const invalidConditions: EntryFilter[] = [
+    clueReferencesOtherClue, // Clues that reference other clues
+    clueReferencesThePuzzle, // Clues that reference the puzzle itself
+  ];
+  const puzzleNoInvalidEntries = filterInvalidEntriesFromPuzzle(puzzleNoThemeClues, invalidConditions);
 
-  // Store the puzzle
-  await dataStore.savePuzzle(puzzleNoCluesReferencingOtherClues);
+  /* Store the puzzle */
+  await dataStore.savePuzzle(puzzleNoInvalidEntries);
 }
 
-/**
- * Filter clues that reference other clues from the crossword puzzle.
- *
- * @param puzzle The crossword puzzle to filter
- * @returns A new crossword puzzle with clues that reference other clues filtered out
- */
-function filterCluesThatReferenceOtherClues(puzzle: CrosswordPuzzle): CrosswordPuzzle {
+function filterInvalidEntriesFromPuzzle(
+  puzzle: CrosswordPuzzle,
+  entryFilters: EntryFilter[]
+): CrosswordPuzzle {
   /* Copy the original puzzle */
   const filteredPuzzle = { ...puzzle };
 
-  /* Filter out clues that reference other clues */
+  /* Filter out entries that match any of the provided filters */
   filteredPuzzle.entries = puzzle.entries.filter((entry) => {
-    return !clueReferencesOtherClue(entry.clue);
+    return !entryFilters.some((filter) => filter(entry));
   });
 
   console.log(
-    `Filtered out ${
-      puzzle.entries.length - filteredPuzzle.entries.length
-    } clues that reference other clues from ${puzzle.id}`
+    `Filtered out ${puzzle.entries.length - filteredPuzzle.entries.length} invalid entries from ${puzzle.id}`
   );
   return filteredPuzzle;
 }
@@ -87,16 +88,45 @@ function filterCluesThatReferenceOtherClues(puzzle: CrosswordPuzzle): CrosswordP
  * @param clue The clue to check
  * @returns True if the clue references another clue, false otherwise
  */
-function clueReferencesOtherClue(clue: string): boolean {
+const clueReferencesOtherClue: EntryFilter = (entry: Entry): boolean => {
   const acrossRegex = /\d+-Across/;
   const downRegex = /\d+-Down/;
-  return acrossRegex.test(clue) || downRegex.test(clue);
-}
+  const referencesOtherClue = acrossRegex.test(entry.clue) || downRegex.test(entry.clue);
+
+  if (referencesOtherClue) {
+    console.log(`Filtered out clue referencing another clue: ${entry.clue}`);
+  }
+
+  return referencesOtherClue;
+};
+
+/**
+ * Check if a clue references the puzzle itself.
+ *
+ * A lot of theme clues will reference the puzzle like:
+ * "..., or a hint to four squares in this puzzle"
+ *
+ * We don't want to include these clues because they aren't playable
+ * on their own.
+ *
+ * @param clue The clue to check
+ * @returns True if the clue references this puzzle, false otherwise
+ */
+const clueReferencesThePuzzle: EntryFilter = (entry: Entry): boolean => {
+  const thisPuzzleRegex = /this puzzle/i;
+  const referencesThePuzzle = thisPuzzleRegex.test(entry.clue);
+
+  if (referencesThePuzzle) {
+    console.log(`Filtered out clue referencing the puzzle: ${entry.clue}`);
+  }
+
+  return referencesThePuzzle;
+};
 
 if (require.main === module) {
   /* NYT */
-  const startDate = new Date("2024-01-01T00:00:00Z");
-  const endDate = new Date("2025-04-30T00:00:00Z");
+  const startDate = new Date("2022-01-01T00:00:00Z");
+  const endDate = new Date("2022-01-08T00:00:00Z");
   const cookie = process.env.NYT_COOKIE;
 
   const puzzleDirectory = NYTSource.SOURCE_NAME_SHORT;
