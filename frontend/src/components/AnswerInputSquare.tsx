@@ -25,15 +25,6 @@ const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({
     "bg-base-100",
   ];
 
-  /* Hoverable? */
-  if (hoverable) {
-    classNames.push("hover:scale-120", "hover:border-3");
-
-    if (!revealed) {
-      classNames.push("hover:bg-primary");
-    }
-  }
-
   /* Revealed? */
   if (revealed) {
     classNames.push("text-base-content");
@@ -41,6 +32,10 @@ const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({
     classNames.push("text-secondary");
     if (selected) {
       classNames.push("bg-primary text-primary-content");
+    }
+
+    if (hoverable) {
+      classNames.push("hover:bg-primary");
     }
   }
 
