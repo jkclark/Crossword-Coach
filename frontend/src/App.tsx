@@ -134,6 +134,7 @@ function App() {
         key={`${displayedEntry.clue}-${displayedEntry.answer}`}
         answer={displayedEntry.answer}
         showOrFetchExplanation={showOrFetchExplanation}
+        inputDisabled={animating}
       />
       <ExplanationDisplay explanation={explanation} />
     </div>

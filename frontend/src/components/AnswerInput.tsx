@@ -11,6 +11,7 @@ import AnswerInputSquare from "./AnswerInputSquare";
 const AnswerInput: React.FC<AnswerInputProps> = ({
   answer,
   showOrFetchExplanation,
+  inputDisabled = false,
 }) => {
   const { goToNextEntry } = useEntries();
 
@@ -303,6 +304,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (inputDisabled) return;
       if (event.ctrlKey || event.metaKey) return;
       const key = event.key.toUpperCase();
 
@@ -336,6 +338,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
+      if (inputDisabled) return;
       if (event.code === "Space" || event.key === " ") {
         spacePressedRef.current = false;
       }
@@ -357,6 +360,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     userInputIsFull,
     revealAllLettersOrGoNext,
     submitAnswerOrGoNext,
+    inputDisabled,
   ]);
 
   const animateCorrectAnswer = (delayBetweenJumps: number) => {
@@ -424,6 +428,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
 interface AnswerInputProps {
   answer: string;
   showOrFetchExplanation: () => void;
+  inputDisabled: boolean;
 }
 
 export default AnswerInput;
