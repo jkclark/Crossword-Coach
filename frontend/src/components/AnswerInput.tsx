@@ -298,28 +298,30 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     }
   }, [answer, revealedLetters]);
 
-  /* Handle keyboard input */
+  /* Track spacebar state to prevent repeated firing while held down */
+  const spacePressedRef = useRef(false);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Ignore input if Ctrl or Meta (Command) key is pressed
       if (event.ctrlKey || event.metaKey) return;
-
       const key = event.key.toUpperCase();
 
-      /* Handle the Enter key */
       if (event.key === "Enter") {
         event.preventDefault();
         submitAnswerOrGoNext();
         return;
       }
 
-      /* Handle the spacebar */
-      if (event.code === "Space" || event.key === " ") {
+      if (
+        (event.code === "Space" || event.key === " ") &&
+        !spacePressedRef.current &&
+        !event.repeat
+      ) {
+        spacePressedRef.current = true;
         revealAllLettersOrGoNext();
         return;
       }
 
-      /* If the user has given up, ignore all other keys */
       if (allLettersRevealed) return;
 
       if (key.length === 1 && key >= "A" && key <= "Z") {
@@ -333,8 +335,18 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
       }
     };
 
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.code === "Space" || event.key === " ") {
+        spacePressedRef.current = false;
+      }
+    };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
   }, [
     submitAnswer,
     moveLeft,
