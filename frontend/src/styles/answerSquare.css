@@ -5,3 +5,7 @@
 .settings-mini-answer-square {
   @apply h-[clamp(1.5rem,5vw,2rem)] w-[clamp(1.5rem,5vw,2rem)] text-[clamp(1rem,3vw,1.5rem)];
 }
+
+.main-input-answer-square.wrong {
+  @apply text-error;
+}

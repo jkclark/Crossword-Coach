@@ -25,7 +25,8 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
 
   /* Animation */
   const [jumpingIndexes, setJumpingIndexes] = useState<number[]>([]);
-  const [isShaking, setIsShaking] = useState(false);
+  const [isShowingIncorrectAnimation, setIsShowingIncorrectAnimation] =
+    useState(false);
 
   /* Explanation */
   const [explanationButtonClicked, setExplanationButtonClicked] =
@@ -224,9 +225,9 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
       ); // Wait for all jumps to finish
     } else {
       /* If the answer is incorrect, shake the answer */
-      setIsShaking(true);
+      setIsShowingIncorrectAnimation(true);
       // 400ms duration is defined in animate-shake in index.css
-      setTimeout(() => setIsShaking(false), 400);
+      setTimeout(() => setIsShowingIncorrectAnimation(false), 400);
     }
   }, [goNext]);
 
@@ -374,7 +375,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
   return (
     <>
       <div
-        className={`mb-5 flex justify-center ${isShaking ? "animate-shake" : ""}`}
+        className={`mb-5 flex justify-center ${isShowingIncorrectAnimation ? "animate-shake" : ""}`}
       >
         {answer.split("").map((char, idx) => (
           <AnswerInputSquare
@@ -385,7 +386,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
             hoverable={true}
             revealed={revealedIndexes.includes(idx)}
             jumping={jumpingIndexes.includes(idx)}
-            className={`main-input-answer-square ${idx !== 0 ? "border-l-0" : ""}`}
+            className={`main-input-answer-square ${idx !== 0 ? "border-l-0" : ""} ${isShowingIncorrectAnimation ? "wrong" : ""}`}
             onSelect={() => setCurrentSquareIndex(idx)}
           />
         ))}
