@@ -23,7 +23,6 @@
   }
 }
 
-// Must match the duration in AnswerInput.tsx
 .main-input-answer-square .fade-in {
   animation: fadeIn 0.3s ease-in forwards;
 }

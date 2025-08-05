@@ -21,6 +21,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
   );
   const revealedLetters = useAtomValue(revealedLettersAtom);
   const [revealedIndexes, setRevealedIndexes] = useState<number[]>([]);
+  const [gaveUp, setGaveUp] = useState(false);
   const { setStreak, resetStreak, setCorrectScore, setTotalScore } = useScore();
 
   /* Animation */
@@ -35,9 +36,9 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     useState(false);
 
   /* Derived state */
-  const allLettersRevealed = revealedIndexes.length >= answer.length; // In theory should never be greater than
+  const allLettersRevealed = revealedIndexes.length >= answer.length;
   const userInputIsFull = userInput.every((char) => char !== "");
-  const submitOrNextButtonDisabled = !allLettersRevealed && !userInputIsFull;
+  const submitOrNextButtonDisabled = !gaveUp && !userInputIsFull;
 
   /* Refs to always have latest values in the event handler */
   const currentSquareIndexRef = useRef(currentSquareIndex);
@@ -179,7 +180,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
    */
   const goNext = useCallback(() => {
     /* Update score and streak */
-    if (allLettersRevealed) {
+    if (gaveUp) {
       resetStreak();
 
       setTotalScore((prev) => prev + 1);
@@ -196,13 +197,39 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     /* Update the current entry index and page */
     goToNextEntry();
   }, [
-    allLettersRevealed,
+    gaveUp,
     resetStreak,
     setStreak,
     setCorrectScore,
     setTotalScore,
     goToNextEntry,
   ]);
+
+  const animateCorrectAnswer = (
+    jumpDuration: number,
+    totalDuration: number,
+  ) => {
+    /* Determine delay between jumps based on the number of letters */
+    const len = answerRef.current.length;
+    let delayBetweenJumps: number;
+    if (len <= 1) {
+      delayBetweenJumps = 0;
+    } else {
+      delayBetweenJumps = (totalDuration - jumpDuration) / (len - 1);
+    }
+
+    setIsShowingCorrectAnimation(true);
+
+    setTimeout(() => {
+      setIsShowingCorrectAnimation(false);
+    }, totalDuration);
+
+    for (let i = 0; i < answerRef.current.length; i++) {
+      setTimeout(() => {
+        setJumpingIndexes((prev) => [...prev, i]);
+      }, i * delayBetweenJumps);
+    }
+  };
 
   /**
    * Check if the user input matches the answer.
@@ -230,43 +257,70 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     }
   }, [goNext]);
 
+  /**
+   * Unlike animating the correct answer, here we reveal the letters at a fixed rate,
+   * not over a fixed duration.
+   */
+  const animateRevealAnswer = useCallback(
+    (delayBetweenReveals: number) => {
+      /* Determine indexes to reveal (i.e., exclude already revealed indexes) */
+      const unrevealedIndexes = [];
+      for (let i = 0; i < answerRef.current.length; i++) {
+        if (!revealedIndexes.includes(i)) {
+          unrevealedIndexes.push(i);
+        }
+      }
+
+      /* Animate each unrevealed letter */
+      for (let i = 0; i < unrevealedIndexes.length; i++) {
+        const idx = unrevealedIndexes[i];
+        setTimeout(() => {
+          setRevealedIndexes((prev) => [...prev, idx]);
+        }, i * delayBetweenReveals);
+      }
+    },
+    [revealedIndexes],
+  );
+
   const revealAllLetters = useCallback(() => {
     /* If all letters are already revealed, do nothing */
-    if (allLettersRevealed) return;
+    if (gaveUp) return;
+
+    /* Mark that the user has given up */
+    setGaveUp(true);
 
     /* Reveal all letters */
-    const fadeInDuration = 300; // Must match the fade-in duration in the CSS
-    const totalDuration = 1000;
-    animateRevealAnswer(fadeInDuration, totalDuration);
+    const delayBetweenReveals = 150;
+    animateRevealAnswer(delayBetweenReveals);
 
     /* Update the user input to match the answer */
     setTimeout(() => {
       setUserInput(answerRef.current.split(""));
-    }, totalDuration);
+    }, delayBetweenReveals * answerRef.current.length);
 
     /* Reset the current square index */
     setCurrentSquareIndex(0);
-  }, [allLettersRevealed]);
+  }, [gaveUp, animateRevealAnswer]);
 
   const revealAllLettersOrGoNext = useCallback(() => {
-    if (!allLettersRevealed) {
+    if (!gaveUp) {
       revealAllLetters();
     } else {
       goNext();
     }
-  }, [allLettersRevealed, revealAllLetters, goNext]);
+  }, [gaveUp, revealAllLetters, goNext]);
 
   const submitAnswerOrGoNext = useCallback(() => {
     // If the user typed in an answer and they haven't given up yet, submit it
-    if (userInputIsFull && !allLettersRevealed) {
+    if (userInputIsFull && !gaveUp) {
       submitAnswer();
     }
 
     // If the user already gave up, go to the next entry
-    else if (allLettersRevealed) {
+    else if (gaveUp) {
       goNext();
     }
-  }, [userInputIsFull, allLettersRevealed, submitAnswer, goNext]);
+  }, [userInputIsFull, gaveUp, submitAnswer, goNext]);
 
   // Reveal initial letters based on revealedLetters
   useEffect(() => {
@@ -327,7 +381,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
         return;
       }
 
-      if (allLettersRevealed) return;
+      if (gaveUp) return;
 
       if (key.length === 1 && key >= "A" && key <= "Z") {
         insertLetter(key);
@@ -359,70 +413,12 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     moveRight,
     insertLetter,
     deleteLetter,
-    allLettersRevealed,
+    gaveUp,
     userInputIsFull,
     revealAllLettersOrGoNext,
     submitAnswerOrGoNext,
     inputDisabled,
   ]);
-
-  const animateCorrectAnswer = (
-    jumpDuration: number,
-    totalDuration: number,
-  ) => {
-    /* Determine delay between jumps based on the number of letters */
-    const len = answerRef.current.length;
-    let delayBetweenJumps: number;
-    if (len <= 1) {
-      delayBetweenJumps = 0;
-    } else {
-      delayBetweenJumps = (totalDuration - jumpDuration) / (len - 1);
-    }
-
-    setIsShowingCorrectAnimation(true);
-
-    setTimeout(() => {
-      setIsShowingCorrectAnimation(false);
-    }, totalDuration);
-
-    for (let i = 0; i < answerRef.current.length; i++) {
-      setTimeout(() => {
-        setJumpingIndexes((prev) => [...prev, i]);
-      }, i * delayBetweenJumps);
-    }
-  };
-
-  const animateRevealAnswer = (
-    fadeInDuration: number,
-    totalDuration: number,
-  ) => {
-    /* Determine indexes to reveal (i.e., exclude already revealed indexes) */
-    const unrevealedIndexes = [];
-    for (let i = 0; i < answerRef.current.length; i++) {
-      if (!revealedIndexes.includes(i)) {
-        unrevealedIndexes.push(i);
-      }
-    }
-
-    /* Determine delay between fade-ins based on the number of letters */
-    const numToReveal = unrevealedIndexes.length;
-    let delayBetweenFades: number;
-    if (numToReveal <= 1) {
-      delayBetweenFades = 0;
-    } else {
-      delayBetweenFades = (totalDuration - fadeInDuration) / (numToReveal - 1);
-    }
-
-    /* Animate each unrevealed letter */
-    // TODO: There is a delay based on where the letter is in the entire answer,
-    // not just where it is in the unrevealed letters. BUG
-    for (let i = 0; i < unrevealedIndexes.length; i++) {
-      const idx = unrevealedIndexes[i];
-      setTimeout(() => {
-        setRevealedIndexes((prev) => [...prev, idx]);
-      }, i * delayBetweenFades);
-    }
-  };
 
   return (
     <>
@@ -445,7 +441,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
       </div>
 
       <div className="flex flex-row justify-center gap-2">
-        {allLettersRevealed ? (
+        {gaveUp ? (
           <button
             className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
             onClick={() => {
@@ -460,7 +456,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
           <button
             className="btn hover:text-error py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
             onClick={revealAllLetters}
-            disabled={allLettersRevealed}
+            disabled={gaveUp}
           >
             Give up
           </button>
