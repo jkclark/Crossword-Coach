@@ -1,5 +1,5 @@
 import { useAtomValue } from "jotai";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import AnswerInput from "./components/AnswerInput";
 import ExplanationDisplay from "./components/ExplanationDisplay";
@@ -36,9 +36,9 @@ function App() {
   );
    * is complete. Otherwise, if (not loading AND no entries), we'll show the "no more entries" display.
    */
-  const [firstLoadDone, setFirstLoadDone] = React.useState(false);
-  const prevLoadingRef = React.useRef(isLoadingAtLeast1Second);
-  React.useEffect(() => {
+  const [firstLoadDone, setFirstLoadDone] = useState(false);
+  const prevLoadingRef = useRef(isLoadingAtLeast1Second);
+  useEffect(() => {
     if (
       prevLoadingRef.current && // was loading before
       !isLoadingAtLeast1Second && // now not loading
@@ -146,16 +146,16 @@ function App() {
 
   /**
    * Priority of divs:
-   * 1. First load? Loading div
-   * 2. Entries? Entry display div
-   * 3. Loading entries? Loading div
+   * 1. First load not done yet? Loading div
+   * 2. Entry display div is truthy? Entry display div
+   * 3. currentEntry (but not displayedEntry) or Loading entries? Loading div
    * 4. No entries left
    */
   const divToDisplay = !firstLoadDone
     ? loadingDiv
     : entryDisplayDiv
       ? entryDisplayDiv
-      : isLoadingAtLeast1Second
+      : isLoadingAtLeast1Second || currentEntry
         ? loadingDiv
         : noEntriesLeftDiv;
 
