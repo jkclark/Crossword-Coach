@@ -235,11 +235,14 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     if (allLettersRevealed) return;
 
     /* Reveal all letters */
-    const newRevealedIndexes = answerRef.current.split("").map((_, idx) => idx);
-    setRevealedIndexes(newRevealedIndexes);
+    const fadeInDuration = 300; // Must match the fade-in duration in the CSS
+    const totalDuration = 1000;
+    animateRevealAnswer(fadeInDuration, totalDuration);
 
     /* Update the user input to match the answer */
-    setUserInput(answerRef.current.split(""));
+    setTimeout(() => {
+      setUserInput(answerRef.current.split(""));
+    }, totalDuration);
 
     /* Reset the current square index */
     setCurrentSquareIndex(0);
@@ -386,6 +389,38 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
       setTimeout(() => {
         setJumpingIndexes((prev) => [...prev, i]);
       }, i * delayBetweenJumps);
+    }
+  };
+
+  const animateRevealAnswer = (
+    fadeInDuration: number,
+    totalDuration: number,
+  ) => {
+    /* Determine indexes to reveal (i.e., exclude already revealed indexes) */
+    const unrevealedIndexes = [];
+    for (let i = 0; i < answerRef.current.length; i++) {
+      if (!revealedIndexes.includes(i)) {
+        unrevealedIndexes.push(i);
+      }
+    }
+
+    /* Determine delay between fade-ins based on the number of letters */
+    const numToReveal = unrevealedIndexes.length;
+    let delayBetweenFades: number;
+    if (numToReveal <= 1) {
+      delayBetweenFades = 0;
+    } else {
+      delayBetweenFades = (totalDuration - fadeInDuration) / (numToReveal - 1);
+    }
+
+    /* Animate each unrevealed letter */
+    // TODO: There is a delay based on where the letter is in the entire answer,
+    // not just where it is in the unrevealed letters. BUG
+    for (let i = 0; i < unrevealedIndexes.length; i++) {
+      const idx = unrevealedIndexes[i];
+      setTimeout(() => {
+        setRevealedIndexes((prev) => [...prev, idx]);
+      }, i * delayBetweenFades);
     }
   };
 

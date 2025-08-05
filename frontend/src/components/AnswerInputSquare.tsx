@@ -57,7 +57,9 @@ const AnswerInputSquare: React.FC<AnswerInputSquareProps> = ({
       role="button"
       aria-label={revealed ? answer : value}
     >
-      {revealed ? answer : value}
+      <span className={`${revealed ? "fade-in" : ""}`}>
+        {revealed ? answer : value}
+      </span>
     </div>
   );
 };

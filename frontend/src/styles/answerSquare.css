@@ -13,3 +13,17 @@
 .main-input-answer-square.correct {
   @apply text-green-600;
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Must match the duration in AnswerInput.tsx
+.main-input-answer-square .fade-in {
+  animation: fadeIn 0.3s ease-in forwards;
+}
