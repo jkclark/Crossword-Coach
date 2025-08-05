@@ -24,6 +24,8 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
   const { setStreak, resetStreak, setCorrectScore, setTotalScore } = useScore();
 
   /* Animation */
+  const [isShowingCorrectAnimation, setIsShowingCorrectAnimation] =
+    useState(false);
   const [jumpingIndexes, setJumpingIndexes] = useState<number[]>([]);
   const [isShowingIncorrectAnimation, setIsShowingIncorrectAnimation] =
     useState(false);
@@ -365,6 +367,15 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
   ]);
 
   const animateCorrectAnswer = (delayBetweenJumps: number) => {
+    setIsShowingCorrectAnimation(true);
+
+    setTimeout(
+      () => {
+        setIsShowingCorrectAnimation(false);
+      },
+      answerRef.current.length * delayBetweenJumps + 400,
+    ); // 400ms for the
+
     for (let i = 0; i < answerRef.current.length; i++) {
       setTimeout(() => {
         setJumpingIndexes((prev) => [...prev, i]);
@@ -386,7 +397,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
             hoverable={true}
             revealed={revealedIndexes.includes(idx)}
             jumping={jumpingIndexes.includes(idx)}
-            className={`main-input-answer-square ${idx !== 0 ? "border-l-0" : ""} ${isShowingIncorrectAnimation ? "wrong" : ""}`}
+            className={`main-input-answer-square ${idx !== 0 ? "border-l-0" : ""} ${isShowingIncorrectAnimation ? "incorrect" : ""} ${isShowingCorrectAnimation ? "correct" : ""}`}
             onSelect={() => setCurrentSquareIndex(idx)}
           />
         ))}
