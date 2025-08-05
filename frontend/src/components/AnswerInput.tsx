@@ -213,18 +213,15 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
       userInputRef.current.join("").toLowerCase() ===
       answerRef.current.toLowerCase()
     ) {
-      const delayBetweenJumps = 70; // milliseconds
-
       /* Animate the answer */
-      animateCorrectAnswer(delayBetweenJumps);
+      const jumpDuration = 500;
+      const totalDuration = 800;
+      animateCorrectAnswer(jumpDuration, totalDuration);
 
       /* After animation, go to next entry */
-      setTimeout(
-        () => {
-          goNext();
-        },
-        answerRef.current.length * delayBetweenJumps + 400,
-      ); // Wait for all jumps to finish
+      setTimeout(() => {
+        goNext();
+      }, totalDuration); // Wait for all jumps to finish
     } else {
       /* If the answer is incorrect, shake the answer */
       setIsShowingIncorrectAnimation(true);
@@ -366,20 +363,29 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     inputDisabled,
   ]);
 
-  const animateCorrectAnswer = (delayBetweenJumps: number) => {
+  const animateCorrectAnswer = (
+    jumpDuration: number,
+    totalDuration: number,
+  ) => {
+    /* Determine delay between jumps based on the number of letters */
+    const len = answerRef.current.length;
+    let delayBetweenJumps: number;
+    if (len <= 1) {
+      delayBetweenJumps = 0;
+    } else {
+      delayBetweenJumps = (totalDuration - jumpDuration) / (len - 1);
+    }
+
     setIsShowingCorrectAnimation(true);
 
-    setTimeout(
-      () => {
-        setIsShowingCorrectAnimation(false);
-      },
-      answerRef.current.length * delayBetweenJumps + 400,
-    ); // 400ms for the
+    setTimeout(() => {
+      setIsShowingCorrectAnimation(false);
+    }, totalDuration);
 
     for (let i = 0; i < answerRef.current.length; i++) {
       setTimeout(() => {
         setJumpingIndexes((prev) => [...prev, i]);
-      }, i * delayBetweenJumps); // 120ms delay between jumps
+      }, i * delayBetweenJumps);
     }
   };
 

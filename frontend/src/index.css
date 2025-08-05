@@ -29,6 +29,11 @@ html {
     transform: translateY(0);
   }
 }
+
+/**
+ * If you change the duration here, make sure also to change it
+ * in the AnswerInput component.
+ */
 .animate-jump {
   animation: jump 0.5s cubic-bezier(0.36, 1.7, 0.57, 0.99);
 }
