@@ -441,18 +441,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
       </div>
 
       <div className="flex flex-row justify-center gap-2">
-        {gaveUp ? (
-          <button
-            className="btn py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
-            onClick={() => {
-              setExplanationButtonClicked(true);
-              showOrFetchExplanation();
-            }}
-            disabled={explanationButtonClicked}
-          >
-            I don't understand
-          </button>
-        ) : (
+        {!gaveUp && (
           <button
             className="btn hover:text-error py-[0.5em] text-[clamp(0.5rem,2vw,1.5rem)]"
             onClick={revealAllLetters}
